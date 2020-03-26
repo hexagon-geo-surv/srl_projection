@@ -57,7 +57,6 @@ TEST(PinholeCamera, functions)
       srl::projection::PinholeCamera<srl::projection::RadialTangentialDistortion8>::createTestObject());
 
   for (size_t c = 0; c < cameras.size(); ++c) {
-    //std::cout << "Testing " << cameras.at(c)->type() << std::endl;
     // try quite a lot of points:
     for (size_t i = 0; i < NUM_POINTS; ++i) {
       // create a random point in the field of view:
@@ -122,13 +121,9 @@ TEST(PinholeCamera, functions)
         cameras.at(c)->projectWithExternalParameters(ray, intrinsics_m, &imagePoint_m);
         J_numDiff_intrinsics.col(d) = (imagePoint_p - imagePoint_m) / (2 * dp);
       }
-      /*std::cout<<J_numDiff_intrinsics<<std::endl;
-      std::cout<<"----------------"<<std::endl;
-      std::cout<<J_intrinsics<<std::endl;
-      std::cout<<"================"<<std::endl;*/
+
       ASSERT_TRUE((J_numDiff_intrinsics - J_intrinsics).norm() < 0.0001) <<
           "Jacobian verification failed";
-
     }
   }
 }

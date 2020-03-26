@@ -10,11 +10,12 @@ find_package( Eigen3 REQUIRED )
 include_directories(${EIGEN3_INCLUDE_DIR}) 
 
 # require OpenCV
-find_package( OpenCV 3 REQUIRED COMPONENTS highgui imgproc core features2d)
+find_package( OpenCV REQUIRED COMPONENTS highgui imgproc core features2d)
 include_directories(BEFORE ${OpenCV_INCLUDE_DIRS})
 
 # build the library
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Wall -Werror -std=c++11 -fPIC")
+set(CMAKE_CXX_FLAGS
+    "${CMAKE_CXX_FLAGS} -march=native -Wall -pedantic -Wextra -Werror -std=c++11 -fPIC")
 include_directories(include/)
 add_library(${PROJECT_NAME} STATIC 
   include/srl/projection/ProjectionBase.hpp

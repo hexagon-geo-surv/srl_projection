@@ -41,7 +41,7 @@ TEST(OusterLidar, functions)
   const size_t NUM_POINTS = 100;
 
   srl::projection::OusterLidar ousterLidar = srl::projection::OusterLidar::testObject();
-  //std::cout << "Testing " << cameras.at(c)->type() << std::endl;
+
   // try quite a lot of points:
   for (size_t i = 0; i < NUM_POINTS; ++i) {
     // create a random point in the field of view:
@@ -51,7 +51,6 @@ TEST(OusterLidar, functions)
     Eigen::Vector3d ray;
     ASSERT_TRUE(ousterLidar.backProject(imagePoint, &ray)) <<
                       "unsuccessful back projection";
-    //std::cout << imagePoint.transpose() << ", ray = " << ray.transpose() << std::endl;
 
     // randomise distance
     ray.normalize();
@@ -65,7 +64,6 @@ TEST(OusterLidar, functions)
                       "unsuccessful projection";
 
     // check they are the same
-    //std::cout << imagePoint2.transpose() << " ; " << imagePoint.transpose() << std::endl;
     ASSERT_TRUE((imagePoint2 - imagePoint).norm() < 0.01) <<
                       "project/unproject failure";
 

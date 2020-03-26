@@ -31,7 +31,7 @@
  *********************************************************************************/
 
 /**
- * @file cameras/RadialTangentialDistortion8.hpp
+ * @file projection/RadialTangentialDistortion8.hpp
  * @brief Header file for the RadialTangentialDistortion class.
  * @author Stefan Leutenegger
  */

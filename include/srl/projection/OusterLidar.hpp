@@ -32,7 +32,7 @@
  *********************************************************************************/
 
 /**
- * @file cameras/OusterLidar.hpp
+ * @file projection/OusterLidar.hpp
  * @brief Header file for the OusterLidar class.
  * @author Stefan Leutenegger
  */
@@ -58,9 +58,7 @@ namespace srl {
 /// \brief cameras Namespace for camera-related functionality.
 namespace projection {
 
-class OusterLidar; // forward declaration
-
-/// \class ProjectionBase<DISTORTION_T>
+/// \class OusterLidar
 /// \brief This implements the Ouster Lidar projection model.
 class OusterLidar : public ProjectionBase
 {
@@ -81,16 +79,12 @@ class OusterLidar : public ProjectionBase
   }
 
   /// \brief Get the intrinsics as a concatenated vector.
-  /// \return The intrinsics as a concatenated vector.
-  inline void getIntrinsics(Eigen::VectorXd & ) const {
-    throw std::runtime_error("not implemented");
-  }
+  /// \param[out] intrinsics The intrinsics as a concatenated vector.
+  inline void getIntrinsics(Eigen::VectorXd & intrinsics) const;
 
   /// \brief overwrite all intrinsics - use with caution !
   /// \param[in] intrinsics The intrinsics as a concatenated vector.
-  inline bool setIntrinsics(const Eigen::VectorXd & ) {
-    throw std::runtime_error("not implemented");
-  }
+  inline bool setIntrinsics(const Eigen::VectorXd & intrinsics);
 
   /// \brief Get the total number of intrinsics.
   /// \return Number of intrinsics parameters.

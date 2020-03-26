@@ -31,7 +31,7 @@
  *********************************************************************************/
 
 /**
- * @file cameras/EquidistantDistortion.hpp
+ * @file projection/EquidistantDistortion.hpp
  * @brief Header file for the EquidistantDistortion class.
  * @author Stefan Leutenegger
  */

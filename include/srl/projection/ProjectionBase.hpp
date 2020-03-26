@@ -31,7 +31,7 @@
  *********************************************************************************/
 
 /**
- * @file cameras/ProjectionBase.hpp
+ * @file projection/ProjectionBase.hpp
  * @brief Header file for the ProjectionBase class.
  * @author Stefan Leutenegger
  */
@@ -82,7 +82,7 @@ class ProjectionBase
   }
 
   /// \brief Constructor for width, height and Id
-  inline ProjectionBase(int imageWidth, int imageHeight, uint64_t id = 0)
+  inline ProjectionBase(int imageWidth, int imageHeight)
         : imageWidth_(imageWidth),
           imageHeight_(imageHeight)
     {

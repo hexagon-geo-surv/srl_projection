@@ -52,9 +52,8 @@ PinholeCamera<DISTORTION_T>::PinholeCamera(int imageWidth,
                                            double focalLengthV,
                                            double imageCenterU,
                                            double imageCenterV,
-                                           const distortion_t & distortion,
-                                           uint64_t id)
-    : PinholeCameraBase(imageWidth, imageHeight, id),
+                                           const distortion_t & distortion)
+    : PinholeCameraBase(imageWidth, imageHeight),
     distortion_(distortion),
     fu_(focalLengthU),
     fv_(focalLengthV),
@@ -129,14 +128,14 @@ bool PinholeCamera<DISTORTION_T>::initialiseUndistortMaps(
   Eigen::Vector4d hrayTransformed;
   const double rayLength = 0.25;
 
-  for (unsigned int y = 0; y < undistortedImageHeight; y++) {
+  for (int y = 0; y < undistortedImageHeight; y++) {
 
     pixel(1) = y;
 
     float *pmap_x = map_x.ptr<float>(y); // for the yth row in the map
     float *pmap_y = map_y.ptr<float>(y);
 
-    for (unsigned int x = 0; x < undistortedImageWidth; x++) {
+    for (int x = 0; x < undistortedImageWidth; x++) {
 
       pixel(0) = x;
 

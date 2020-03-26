@@ -32,7 +32,7 @@
  *********************************************************************************/
 
 /**
- * @file cameras/PinholeCamera.hpp
+ * @file projection/PinholeCamera.hpp
  * @brief Header file for the PinholeCamera class.
  * @author Stefan Leutenegger
  * @author Andreas Forster
@@ -68,8 +68,8 @@ class PinholeCameraBase : public ProjectionBase {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   /// \brief Constructor for width, height and Id
-  inline PinholeCameraBase(int imageWidth, int imageHeight, uint64_t id = 0)
-        : ProjectionBase(imageWidth, imageHeight, id)
+  inline PinholeCameraBase(int imageWidth, int imageHeight)
+        : ProjectionBase(imageWidth, imageHeight)
   {
   }
 
@@ -99,7 +99,7 @@ class PinholeCameraBase : public ProjectionBase {
 
   /// \brief Get undistorted image -- assumes initialiseUndistortMaps was called
   /// @param[in] srcImg The distorted input image.
-  /// @param[out] dstImg The undistorted output image.
+  /// @param[out] destImg The undistorted output image.
   /// \return True on success.
   virtual bool undistortImage(const cv::Mat & srcImg, cv::Mat & destImg) const = 0;
 
@@ -142,10 +142,9 @@ class PinholeCamera : public PinholeCameraBase
   /// @param[in] imageCenterU The horizontal centre in pixels.
   /// @param[in] imageCenterV The vertical centre in pixels.
   /// @param[in] distortion The distortion object to be used.
-  /// @param[in] id Assign a generic ID, if desired.
   PinholeCamera(int imageWidth, int imageHeight, double focalLengthU,
                 double focalLengthV, double imageCenterU, double imageCenterV,
-                const distortion_t & distortion, uint64_t id=-1);
+                const distortion_t & distortion);
 
   /// \brief Destructor.
   virtual ~PinholeCamera()
@@ -224,7 +223,7 @@ class PinholeCamera : public PinholeCameraBase
 
   /// \brief Get undistorted image -- assumes initialiseUndistortMaps was called
   /// @param[in] srcImg The distorted input image.
-  /// @param[out] dstImg The undistorted output image.
+  /// @param[out] destImg The undistorted output image.
   /// \return True on success.
   virtual bool undistortImage(const cv::Mat & srcImg, cv::Mat & destImg) const;
 
