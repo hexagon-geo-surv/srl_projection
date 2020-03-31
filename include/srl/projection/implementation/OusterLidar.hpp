@@ -39,9 +39,9 @@
 
 #include <Eigen/Geometry>
 
-// \brief okvis Main namespace of this package.
+// \brief Main namespace of this package.
 namespace srl {
-// \brief cameras Namespace for camera-related functionality.
+// \brief Namespace for camera-related functionality.
 namespace projection {
 
 OusterLidar::OusterLidar(int imageWidth, int imageHeight, const Eigen::VectorXd & beamAzimuthAngles,

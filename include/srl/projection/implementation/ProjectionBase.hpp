@@ -38,9 +38,9 @@
 
 #include <iostream>
 
-/// \brief okvis Main namespace of this package.
+/// \brief Main namespace of this package.
 namespace srl {
-/// \brief cameras Namespace for camera-related functionality.
+/// \brief Namespace for camera-related functionality.
 namespace projection {
 
 // Set the mask. It must be the same size as the image and

@@ -43,9 +43,9 @@
 #include <Eigen/Core>
 #include "srl/projection/DistortionBase.hpp"
 
-/// \brief okvis Main namespace of this package.
+/// \brief Main namespace of this package.
 namespace srl {
-/// \brief cameras Namespace for camera-related functionality.
+/// \brief Namespace for camera-related functionality.
 namespace projection {
 
 /// \class EquidistantDistortion

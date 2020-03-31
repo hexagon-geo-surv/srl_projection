@@ -53,9 +53,9 @@
 #include "srl/projection/DistortionBase.hpp"
 #include "srl/projection/NoDistortion.hpp"
 
-/// \brief okvis Main namespace of this package.
+/// \brief Main namespace of this package.
 namespace srl {
-/// \brief cameras Namespace for camera-related functionality.
+/// \brief Namespace for camera-related functionality.
 namespace projection {
 
 /// \class OusterLidar

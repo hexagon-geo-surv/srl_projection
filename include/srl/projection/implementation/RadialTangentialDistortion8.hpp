@@ -39,9 +39,9 @@
 #include <Eigen/LU>
 #include <iostream>
 
-/// \brief okvis Main namespace of this package.
+/// \brief Main namespace of this package.
 namespace srl {
-/// \brief cameras Namespace for camera-related functionality.
+/// \brief Namespace for camera-related functionality.
 namespace projection {
 
 // The default constructor with all zero ki
