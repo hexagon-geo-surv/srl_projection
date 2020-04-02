@@ -309,7 +309,7 @@ class ProjectionBase
   /// @}
 
   /// \brief Obtain the number of intrinsics parameters.
-  virtual int noIntrinsicsParameters() const = 0;
+  virtual int numIntrinsicsParameters() const = 0;
 
  protected:
 

@@ -103,7 +103,7 @@ TEST(PinholeCamera, functions)
                         "Jacobian Verification failed";
 
       // check intrinsics Jacobian
-      const int numIntrinsics = cameras.at(c)->noIntrinsicsParameters();
+      const int numIntrinsics = cameras.at(c)->numIntrinsicsParameters();
       Eigen::VectorXd intrinsics;
       cameras.at(c)->getIntrinsics(intrinsics);
       Eigen::Matrix2Xd J_numDiff_intrinsics;

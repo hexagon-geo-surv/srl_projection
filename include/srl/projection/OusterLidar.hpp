@@ -88,7 +88,7 @@ class OusterLidar : public ProjectionBase
 
   /// \brief Get the total number of intrinsics.
   /// \return Number of intrinsics parameters.
-  inline int noIntrinsicsParameters() const
+  inline int numIntrinsicsParameters() const
   {
     return -1;
   }
