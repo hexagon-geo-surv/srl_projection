@@ -8,7 +8,7 @@ The 3-clause BSD license (see file LICENSE) applies.
 
 ### How do I get set up? ###
 
-This is a pure cmake project. 
+This is a pure cmake project.
 
 You will need to install the following dependencies,
 
@@ -21,9 +21,9 @@ You will need to install the following dependencies,
         sudo apt-get install libeigen3-dev
 
 
-* OpenCV 2.4-3.0: follow the instructions on http://opencv.org/ or install 
-  via 
- 
+* OpenCV 2.4-3.0: follow the instructions on http://opencv.org/ or install
+  via
+
         sudo apt-get install libopencv-dev
 
 * gtest
@@ -37,7 +37,7 @@ To change the cmake build type for the whole project use:
     mkdir build && cd build
     cmake -DCMAKE_BUILD_TYPE=Release ..
     make -j
-    
+
 ### Running the tests ###
 
 To run the gtests, do:
@@ -48,9 +48,9 @@ To run the gtests, do:
 ### Contribution guidelines ###
 
 * Programming guidelines: please follow the SRL coding standard.
-	
+
 * Writing tests: please write unit tests (gtest).
 
-* Code review: please create a pull request for all changes proposed. The pull 
+* Code review: please create a pull request for all changes proposed. The pull
   request will be reviewed by an admin before merging.
 
