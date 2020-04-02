@@ -40,9 +40,26 @@ To change the cmake build type for the whole project use:
 
 ### Running the tests ###
 
-To run the gtests, do:
+To run the gtests after building, do:
 
-    ./rsl_projection_test
+    make test
+
+### Installing ###
+
+To install system-wide after building, do:
+
+    sudo make install
+
+### Using in your project ###
+
+To use in your CMake project, after installing system-wide, put the following in your
+CMakeLists.txt:
+
+```
+find_package(SRLProjection)
+target_link_libraries(your_target SRL::Projection)
+```
+
 
 
 ### Contribution guidelines ###
