@@ -106,6 +106,7 @@ class ProjectionBase
   inline bool hasMask() const;
 
   /// \brief stop masking
+  /// @return Always true.
   inline bool removeMask();
 
   /// \brief Get the mask.
