@@ -72,8 +72,6 @@ enum class ProjectionStatus
 class ProjectionBase
 {
  public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   /// \brief default Constructor -- does nothing serious
   inline ProjectionBase()
       : imageWidth_(0),
@@ -310,6 +308,8 @@ class ProjectionBase
 
   /// \brief Obtain the number of intrinsics parameters.
   virtual int numIntrinsicsParameters() const = 0;
+
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
  protected:
 

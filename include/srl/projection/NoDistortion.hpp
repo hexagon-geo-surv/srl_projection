@@ -54,8 +54,6 @@ namespace projection {
 class NoDistortion : public DistortionBase
 {
  public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   /// \brief Destructor, not doing anything
   inline ~NoDistortion()
   {
@@ -193,6 +191,8 @@ class NoDistortion : public DistortionBase
     return true;
   }
   /// @}
+
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 }  // namespace projection

@@ -52,8 +52,6 @@ namespace projection {
 class DistortionBase
 {
  public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   /// \brief Destructor -- not doing anything
   virtual ~DistortionBase()
   {
@@ -134,6 +132,8 @@ class DistortionBase
                          Eigen::Vector2d * pointUndistorted,
                          Eigen::Matrix2d * pointJacobian) const = 0;
   /// @}
+
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 }  // namespace projection

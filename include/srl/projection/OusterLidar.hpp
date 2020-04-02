@@ -63,8 +63,6 @@ namespace projection {
 class OusterLidar : public ProjectionBase
 {
  public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   /// \brief Constructor that will figure out the type of distortion
   /// @param[in] imageWidth The width in pixels.
   /// @param[in] imageHeight The height in pixels.
@@ -260,6 +258,8 @@ class OusterLidar : public ProjectionBase
 
   Eigen::VectorXd beamElevationAngles() const;
   void setBeamElevationAngles(const Eigen::VectorXd &beamElevationAngles);
+
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 protected:
 

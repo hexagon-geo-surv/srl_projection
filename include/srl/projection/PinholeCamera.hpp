@@ -66,7 +66,6 @@ class PinholeCamera; // forward declaration
 /// \brief This is an interface for all the different distortion versions, allowing generic undistortion.
 class PinholeCameraBase : public ProjectionBase {
  public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   /// \brief Constructor for width, height and Id
   inline PinholeCameraBase(int imageWidth, int imageHeight)
         : ProjectionBase(imageWidth, imageHeight)
@@ -122,6 +121,8 @@ class PinholeCameraBase : public ProjectionBase {
   /// \brief Get the focal image centre along the v-dimension.
   /// \return The vertical centre in pixels.
   virtual double imageCenterV() const = 0;
+
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 /// \class PinholeCamera<DISTORTION_T>
@@ -131,7 +132,6 @@ template<class DISTORTION_T>
 class PinholeCamera : public PinholeCameraBase
 {
  public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   typedef DISTORTION_T distortion_t; ///< Makes the distortion type accessible.
 
   /// \brief Constructor that will figure out the type of distortion
@@ -402,6 +402,8 @@ class PinholeCamera : public PinholeCameraBase
   {
     return distortion_.type();
   }
+
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
  protected:
 

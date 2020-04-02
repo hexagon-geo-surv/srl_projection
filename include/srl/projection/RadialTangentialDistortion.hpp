@@ -51,8 +51,6 @@ namespace projection {
 class RadialTangentialDistortion : public DistortionBase
 {
  public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   /// \brief The default constructor with all zero ki
   inline RadialTangentialDistortion();
 
@@ -162,6 +160,8 @@ class RadialTangentialDistortion : public DistortionBase
                         Eigen::Vector2d * pointUndistorted,
                         Eigen::Matrix2d * pointJacobian) const;
   /// @}
+
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
  protected:
   Eigen::Matrix<double, NumDistortionIntrinsics, 1> parameters_;  ///< all distortion parameters
