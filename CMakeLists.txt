@@ -40,7 +40,7 @@ target_include_directories(${PROJECT_NAME} BEFORE
 set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_compile_options(${PROJECT_NAME} PRIVATE
 	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-	-Wall -pedantic -Wextra -Werror -march=native>
+	-Wall -pedantic -Wextra -Werror>
 )
 
 target_link_libraries(${PROJECT_NAME}
