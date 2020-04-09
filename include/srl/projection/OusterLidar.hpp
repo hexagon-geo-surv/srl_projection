@@ -5,7 +5,7 @@
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- * 
+ *
  *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above copyright notice,
@@ -68,7 +68,7 @@ class OusterLidar : public ProjectionBase
   /// @param[in] imageHeight The height in pixels.
   /// @param[in] beamAzimuthAngles The azimuth start angles per scan row.
   /// @param[in] beamElevationAngles The elevation angle per scan row.
-  OusterLidar(int imageWidth, int imageHeight, const Eigen::VectorXd & beamAzimuthAngles,
+  inline OusterLidar(int imageWidth, int imageHeight, const Eigen::VectorXd & beamAzimuthAngles,
               const Eigen::VectorXd & beamElevationAngles);
 
   /// \brief Destructor.
@@ -243,9 +243,9 @@ class OusterLidar : public ProjectionBase
   /// @}
 
   /// \brief get a test instance
-  static std::shared_ptr<ProjectionBase> createTestObject();
+  static inline std::shared_ptr<ProjectionBase> createTestObject();
   /// \brief get a test instance
-  static OusterLidar testObject();
+  static inline OusterLidar testObject();
 
   /// \brief Obtain the projection type
   std::string type() const
@@ -253,11 +253,11 @@ class OusterLidar : public ProjectionBase
     return "OusterLidar";
   }
 
-  Eigen::VectorXd beamAzimuthAngles() const;
-  void setBeamAzimuthAngles(const Eigen::VectorXd &beamAzimuthAngles);
+  inline Eigen::VectorXd beamAzimuthAngles() const;
+  inline void setBeamAzimuthAngles(const Eigen::VectorXd &beamAzimuthAngles);
 
-  Eigen::VectorXd beamElevationAngles() const;
-  void setBeamElevationAngles(const Eigen::VectorXd &beamElevationAngles);
+  inline Eigen::VectorXd beamElevationAngles() const;
+  inline void setBeamElevationAngles(const Eigen::VectorXd &beamElevationAngles);
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
