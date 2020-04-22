@@ -46,7 +46,7 @@
 
 namespace srl {
   /// Set the precision of all operations (float or double).
-  typedef double float_t;
+  typedef float float_t;
 
   template <int _Rows, int _Cols>
   using Matrixf = Eigen::Matrix<float_t, _Rows, _Cols>;
