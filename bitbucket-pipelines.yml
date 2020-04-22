@@ -4,18 +4,26 @@ pipelines:
         name: Ubuntu 16.04
         image: sotirisp/supereight-ci:16.04
         script:
-          - mkdir -p build
-          - cd build
+          - mkdir -p build && cd build
           - GTEST_ROOT=/usr/local/src/googletest/googletest/ cmake -DCMAKE_BUILD_TYPE=Release ..
+          - make -j
+          - make -j test
+          - cd .. && rm -rf build
+          - mkdir -p build && cd build
+          - GTEST_ROOT=/usr/local/src/googletest/googletest/ cmake -DCMAKE_BUILD_TYPE=Debug ..
           - make -j
           - make -j test
     - step:
         name: Ubuntu 18.04
         image: sotirisp/supereight-ci:18.04
         script:
-          - mkdir -p build
-          - cd build
+          - mkdir -p build && cd build
           - GTEST_ROOT=/usr/local/src/googletest/googletest/ cmake -DCMAKE_BUILD_TYPE=Release ..
+          - make -j
+          - make -j test
+          - cd .. && rm -rf build
+          - mkdir -p build && cd build
+          - GTEST_ROOT=/usr/local/src/googletest/googletest/ cmake -DCMAKE_BUILD_TYPE=Debug ..
           - make -j
           - make -j test
 
