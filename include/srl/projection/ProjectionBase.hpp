@@ -4,7 +4,7 @@
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- * 
+ *
  *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above copyright notice,
@@ -48,6 +48,7 @@
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #include <opencv2/core/core.hpp> // Code that causes warning goes here
 #pragma GCC diagnostic pop
+#include <srl/typedefs.hpp>
 #include <srl/projection/DistortionBase.hpp>
 
 /// \brief Main namespace of this package.
@@ -126,10 +127,10 @@ class ProjectionBase
   }
 
   /// \brief obtain all intrinsics
-  virtual void getIntrinsics(Eigen::VectorXd & intrinsics) const = 0;
+  virtual void getIntrinsics(VectorXf & intrinsics) const = 0;
 
   /// \brief overwrite all intrinsics - use with caution !
-  virtual bool setIntrinsics(const Eigen::VectorXd & intrinsics) = 0;
+  virtual bool setIntrinsics(const VectorXf & intrinsics) = 0;
 
   //////////////////////////////////////////////////////////////
   /// \name Methods to project points
@@ -141,8 +142,8 @@ class ProjectionBase
   /// @param[out] imagePoint The image point.
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
-  virtual ProjectionStatus project(const Eigen::Vector3d & point,
-                                   Eigen::Vector2d * imagePoint) const = 0;
+  virtual ProjectionStatus project(const Vector3f & point,
+                                   Vector2f * imagePoint) const = 0;
 
   /// \brief Projects a Euclidean point to a 2d image point (projection).
   ///        Uses projection including distortion models.
@@ -153,9 +154,9 @@ class ProjectionBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   virtual ProjectionStatus project(
-      const Eigen::Vector3d & point, Eigen::Vector2d * imagePoint,
-      Eigen::Matrix<double, 2, 3> * pointJacobian,
-      Eigen::Matrix2Xd * intrinsicsJacobian = nullptr) const = 0;
+      const Vector3f & point, Vector2f * imagePoint,
+      Matrixf<2, 3> * pointJacobian,
+      Matrix2Xf * intrinsicsJacobian = nullptr) const = 0;
 
   /// \brief Projects a Euclidean point to a 2d image point (projection).
   ///        Uses projection including distortion models.
@@ -167,9 +168,9 @@ class ProjectionBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   virtual ProjectionStatus projectWithExternalParameters(
-      const Eigen::Vector3d & point, const Eigen::VectorXd & parameters,
-      Eigen::Vector2d * imagePoint, Eigen::Matrix<double, 2, 3> * pointJacobian = nullptr,
-      Eigen::Matrix2Xd * intrinsicsJacobian = nullptr) const = 0;
+      const Vector3f & point, const VectorXf & parameters,
+      Vector2f * imagePoint, Matrixf<2, 3> * pointJacobian = nullptr,
+      Matrix2Xf * intrinsicsJacobian = nullptr) const = 0;
 
   /// \brief Projects Euclidean points to 2d image points (projection) in a batch.
   ///        Uses projection including distortion models.
@@ -177,8 +178,8 @@ class ProjectionBase
   /// @param[out] imagePoints The image points (one point per column).
   /// @param[out] stati       Get information about the success of the projections. See
   ///                         \ref ProjectionStatus for more information.
-  virtual void projectBatch(const Eigen::Matrix3Xd & points,
-                            Eigen::Matrix2Xd * imagePoints,
+  virtual void projectBatch(const Matrix3Xf & points,
+                            Matrix2Xf * imagePoints,
                             std::vector<ProjectionStatus> * stati) const = 0;
 
   /// \brief Projects a point in homogenous coordinates to a 2d image point (projection).
@@ -188,7 +189,7 @@ class ProjectionBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   virtual ProjectionStatus projectHomogeneous(
-      const Eigen::Vector4d & point, Eigen::Vector2d * imagePoint) const = 0;
+      const Vector4f & point, Vector2f * imagePoint) const = 0;
 
   /// \brief Projects a point in homogenous coordinates to a 2d image point (projection).
   ///        Uses projection including distortion models.
@@ -199,9 +200,9 @@ class ProjectionBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   virtual ProjectionStatus projectHomogeneous(
-      const Eigen::Vector4d & point, Eigen::Vector2d * imagePoint,
-      Eigen::Matrix<double, 2, 4> * pointJacobian,
-      Eigen::Matrix2Xd * intrinsicsJacobian = nullptr) const = 0;
+      const Vector4f & point, Vector2f * imagePoint,
+      Matrixf<2, 4> * pointJacobian,
+      Matrix2Xf * intrinsicsJacobian = nullptr) const = 0;
 
   /// \brief Projects a point in homogenous coordinates to a 2d image point (projection).
   ///        Uses projection including distortion models.
@@ -213,10 +214,10 @@ class ProjectionBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   virtual ProjectionStatus projectHomogeneousWithExternalParameters(
-      const Eigen::Vector4d & point, const Eigen::VectorXd & parameters,
-      Eigen::Vector2d * imagePoint,
-      Eigen::Matrix<double, 2, 4> * pointJacobian = nullptr,
-      Eigen::Matrix2Xd * intrinsicsJacobian = nullptr) const = 0;
+      const Vector4f & point, const VectorXf & parameters,
+      Vector2f * imagePoint,
+      Matrixf<2, 4> * pointJacobian = nullptr,
+      Matrix2Xf * intrinsicsJacobian = nullptr) const = 0;
 
   /// \brief Projects points in homogenous coordinates to 2d image points (projection) in a batch.
   ///        Uses projection including distortion models.
@@ -225,7 +226,7 @@ class ProjectionBase
   /// @param[out] stati       Get information about the success of the projections. See
   ///                         \ref ProjectionStatus for more information.
   virtual void projectHomogeneousBatch(
-      const Eigen::Matrix4Xd & points, Eigen::Matrix2Xd * imagePoints,
+      const Matrix4Xf & points, Matrix2Xf * imagePoints,
       std::vector<ProjectionStatus> * stati) const = 0;
   /// @}
 
@@ -237,8 +238,8 @@ class ProjectionBase
   /// @param[in]  imagePoint The image point.
   /// @param[out] direction  The Euclidean direction vector.
   /// @return     true on success.
-  virtual bool backProject(const Eigen::Vector2d & imagePoint,
-                           Eigen::Vector3d * direction) const = 0;
+  virtual bool backProject(const Vector2f & imagePoint,
+                           Vector3f * direction) const = 0;
 
   /// \brief Back-project a 2d image point into Euclidean space (direction vector).
   /// @param[in]  imagePoint         The image point.
@@ -246,23 +247,23 @@ class ProjectionBase
   /// @param[out] pointJacobian      Jacobian of the back-projection function  w.r.t. the point.
   /// @return     true on success.
   virtual bool backProject(
-      const Eigen::Vector2d & imagePoint, Eigen::Vector3d * direction,
-      Eigen::Matrix<double, 3, 2> * pointJacobian) const = 0;
+      const Vector2f & imagePoint, Vector3f * direction,
+      Matrixf<3, 2> * pointJacobian) const = 0;
 
   /// \brief Back-project 2d image points into Euclidean space (direction vectors).
   /// @param[in]  imagePoints The image points (one point per column).
   /// @param[out] directions  The Euclidean direction vectors (one point per column).
   /// @param[out] success     Success of each of the back-projection
-  virtual bool backProjectBatch(const Eigen::Matrix2Xd & imagePoints,
-                                Eigen::Matrix3Xd * directions,
+  virtual bool backProjectBatch(const Matrix2Xf & imagePoints,
+                                Matrix3Xf * directions,
                                 std::vector<bool> * success) const = 0;
 
   /// \brief Back-project a 2d image point into homogeneous point (direction vector).
   /// @param[in]  imagePoint The image point.
   /// @param[out] direction  The homogeneous point as direction vector.
   /// @return     true on success.
-  virtual bool backProjectHomogeneous(const Eigen::Vector2d & imagePoint,
-                                      Eigen::Vector4d * direction) const = 0;
+  virtual bool backProjectHomogeneous(const Vector2f & imagePoint,
+                                      Vector4f * direction) const = 0;
 
   /// \brief Back-project a 2d image point into homogeneous point (direction vector).
   /// @param[in]  imagePoint         The image point.
@@ -270,15 +271,15 @@ class ProjectionBase
   /// @param[out] pointJacobian      Jacobian of the back-projection function.
   /// @return     true on success.
   virtual bool backProjectHomogeneous(
-      const Eigen::Vector2d & imagePoint, Eigen::Vector4d * direction,
-      Eigen::Matrix<double, 4, 2> * pointJacobian) const = 0;
+      const Vector2f & imagePoint, Vector4f * direction,
+      Matrixf<4, 2> * pointJacobian) const = 0;
 
   /// \brief Back-project 2d image points into homogeneous points (direction vectors).
   /// @param[in]  imagePoints The image points (one point per column).
   /// @param[out] directions  The homogeneous points as direction vectors (one point per column).
   /// @param[out] success     Success of each of the back-projection
   virtual bool backProjectHomogeneousBatch(
-      const Eigen::Matrix2Xd & imagePoints, Eigen::Matrix4Xd * directions,
+      const Matrix2Xf & imagePoints, Matrix4Xf * directions,
       std::vector<bool> * success) const = 0;
   /// @}
 
@@ -288,23 +289,21 @@ class ProjectionBase
 
   /// \brief Creates a random (uniform distribution) image point.
   /// @return A random image point.
-  virtual Eigen::Vector2d createRandomImagePoint() const;
+  virtual Vector2f createRandomImagePoint() const;
 
   /// \brief Creates a random visible point in Euclidean coordinates.
   /// @param[in] minDist The minimal distance of this point.
   /// @param[in] maxDist The maximum distance of this point.
   /// @return    A random Euclidean point.
-  virtual Eigen::Vector3d createRandomVisiblePoint(double minDist = 0.0,
-                                                   double maxDist = 10.0) const;
+  virtual Vector3f createRandomVisiblePoint(float_t minDist = 0.0,
+                                                 float_t maxDist = 10.0) const;
 
   /// \brief Creates a random visible point in homogeneous coordinates.
   /// @param[in] minDist The minimal distance of this point.
   /// @param[in] maxDist The maximum distance of this point.
   /// @return    A random homogeneous point.
-  virtual Eigen::Vector4d createRandomVisibleHomogeneousPoint(double minDist =
-                                                                  0.0,
-                                                              double maxDist =
-                                                                  10.0) const;
+  virtual Vector4f createRandomVisibleHomogeneousPoint(float_t minDist = 0.0,
+                                                            float_t maxDist = 10.0) const;
   /// @}
 
   /// \brief Obtain the number of intrinsics parameters.
@@ -315,10 +314,10 @@ class ProjectionBase
  protected:
 
   /// \brief Check if the keypoint is masked.
-  inline bool isMasked(const Eigen::Vector2d& imagePoint) const;
+  inline bool isMasked(const Vector2f& imagePoint) const;
 
   /// \brief Check if the keypoint is in the image.
-  inline bool isInImage(const Eigen::Vector2d& imagePoint) const;
+  inline bool isInImage(const Vector2f& imagePoint) const;
 
   cv::Mat mask_;  ///< The mask -- empty by default
 

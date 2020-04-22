@@ -56,8 +56,8 @@ EquidistantDistortion::EquidistantDistortion()
 }
 
 // Constructor initialising ki
-EquidistantDistortion::EquidistantDistortion(double k1, double k2, double k3,
-                                             double k4)
+EquidistantDistortion::EquidistantDistortion(float_t k1, float_t k2, float_t k3,
+                                             float_t k4)
 {
   parameters_[0] = k1;
   parameters_[1] = k2;
@@ -69,7 +69,7 @@ EquidistantDistortion::EquidistantDistortion(double k1, double k2, double k3,
   k4_ = k4;
 }
 
-bool EquidistantDistortion::setParameters(const Eigen::VectorXd & parameters)
+bool EquidistantDistortion::setParameters(const VectorXf & parameters)
 {
   if (parameters.cols() != NumDistortionIntrinsics) {
     return false;
@@ -82,63 +82,63 @@ bool EquidistantDistortion::setParameters(const Eigen::VectorXd & parameters)
   return true;
 }
 
-bool EquidistantDistortion::distort(const Eigen::Vector2d & pointUndistorted,
-                                    Eigen::Vector2d * pointDistorted) const
+bool EquidistantDistortion::distort(const Vector2f & pointUndistorted,
+                                    Vector2f * pointDistorted) const
 {
   // distortion only:
-  const double u0 = pointUndistorted[0];
-  const double u1 = pointUndistorted[1];
-  const double r = sqrt(u0 * u0 + u1 * u1);
-  const double theta = atan(r);
-  const double theta2 = theta * theta;
-  const double theta4 = theta2 * theta2;
-  const double theta6 = theta4 * theta2;
-  const double theta8 = theta4 * theta4;
-  const double thetad = theta
+  const float_t u0 = pointUndistorted[0];
+  const float_t u1 = pointUndistorted[1];
+  const float_t r = sqrt(u0 * u0 + u1 * u1);
+  const float_t theta = atan(r);
+  const float_t theta2 = theta * theta;
+  const float_t theta4 = theta2 * theta2;
+  const float_t theta6 = theta4 * theta2;
+  const float_t theta8 = theta4 * theta4;
+  const float_t thetad = theta
       * (1 + k1_ * theta2 + k2_ * theta4 + k3_ * theta6 + k4_ * theta8);
 
-  const double scaling = (r > 1e-8) ? thetad / r : 1.0;
+  const float_t scaling = (r > 1e-8) ? thetad / r : 1.0;
   (*pointDistorted)[0] = scaling * u0;
   (*pointDistorted)[1] = scaling * u1;
   return true;
 }
-bool EquidistantDistortion::distort(const Eigen::Vector2d & pointUndistorted,
-                                    Eigen::Vector2d * pointDistorted,
-                                    Eigen::Matrix2d * pointJacobian,
-                                    Eigen::Matrix2Xd * parameterJacobian) const
+bool EquidistantDistortion::distort(const Vector2f & pointUndistorted,
+                                    Vector2f * pointDistorted,
+                                    Matrix2f * pointJacobian,
+                                    Matrix2Xf * parameterJacobian) const
 {
   // distortion first:
-  const double u0 = pointUndistorted[0];
-  const double u1 = pointUndistorted[1];
-  const double r = sqrt(u0 * u0 + u1 * u1);
-  const double theta = atan(r);
-  const double theta2 = theta * theta;
-  const double theta4 = theta2 * theta2;
-  const double theta6 = theta4 * theta2;
-  const double theta8 = theta4 * theta4;
-  const double thetad = theta
+  const float_t u0 = pointUndistorted[0];
+  const float_t u1 = pointUndistorted[1];
+  const float_t r = sqrt(u0 * u0 + u1 * u1);
+  const float_t theta = atan(r);
+  const float_t theta2 = theta * theta;
+  const float_t theta4 = theta2 * theta2;
+  const float_t theta6 = theta4 * theta2;
+  const float_t theta8 = theta4 * theta4;
+  const float_t thetad = theta
       * (1 + k1_ * theta2 + k2_ * theta4 + k3_ * theta6 + k4_ * theta8);
 
-  const double scaling = (r > 1e-8) ? thetad / r : 1.0;
+  const float_t scaling = (r > 1e-8) ? thetad / r : 1.0;
   (*pointDistorted)[0] = scaling * u0;
   (*pointDistorted)[1] = scaling * u1;
 
-  Eigen::Matrix2d & J = *pointJacobian;
+  Matrix2f & J = *pointJacobian;
   if (r > 1e-8) {
     // mostly matlab generated...
-    double t2;
-    double t3;
-    double t4;
-    double t6;
-    double t7;
-    double t8;
-    double t9;
-    double t11;
-    double t17;
-    double t18;
-    double t19;
-    double t20;
-    double t25;
+    float_t t2;
+    float_t t3;
+    float_t t4;
+    float_t t6;
+    float_t t7;
+    float_t t8;
+    float_t t9;
+    float_t t11;
+    float_t t17;
+    float_t t18;
+    float_t t19;
+    float_t t20;
+    float_t t25;
 
     t2 = u0 * u0;
     t3 = u1 * u1;
@@ -169,14 +169,14 @@ bool EquidistantDistortion::distort(const Eigen::Vector2d & pointUndistorted,
     J(1, 0) = (t7 + t6 * t8 * t4 * u1) - t6 * t17 * t19 * u0 * u1;
 
     if (parameterJacobian) {
-      Eigen::Matrix2Xd & Ji = *parameterJacobian;
+      Matrix2Xf & Ji = *parameterJacobian;
       Ji.resize(2,NumDistortionIntrinsics);
       // mostly matlab generated...
-      double t6;
-      double t2;
-      double t3;
-      double t8;
-      double t10;
+      float_t t6;
+      float_t t2;
+      float_t t3;
+      float_t t8;
+      float_t t10;
 
       t6 = u0 * u0 + u1 * u1;
       t2 = atan(sqrt(t6));
@@ -206,48 +206,48 @@ bool EquidistantDistortion::distort(const Eigen::Vector2d & pointUndistorted,
   return true;
 }
 bool EquidistantDistortion::distortWithExternalParameters(
-    const Eigen::Vector2d & pointUndistorted,
-    const Eigen::VectorXd & parameters, Eigen::Vector2d * pointDistorted,
-    Eigen::Matrix2d * pointJacobian, Eigen::Matrix2Xd * parameterJacobian) const
+    const Vector2f & pointUndistorted,
+    const VectorXf & parameters, Vector2f * pointDistorted,
+    Matrix2f * pointJacobian, Matrix2Xf * parameterJacobian) const
 {
   // decompose parameters
 
-  const double k1 = parameters[0];
-  const double k2 = parameters[1];
-  const double k3 = parameters[2];
-  const double k4 = parameters[3];
+  const float_t k1 = parameters[0];
+  const float_t k2 = parameters[1];
+  const float_t k3 = parameters[2];
+  const float_t k4 = parameters[3];
   // distortion first:
-  const double u0 = pointUndistorted[0];
-  const double u1 = pointUndistorted[1];
-  const double r = sqrt(u0 * u0 + u1 * u1);
-  const double theta = atan(r);
-  const double theta2 = theta * theta;
-  const double theta4 = theta2 * theta2;
-  const double theta6 = theta4 * theta2;
-  const double theta8 = theta4 * theta4;
-  const double thetad = theta
+  const float_t u0 = pointUndistorted[0];
+  const float_t u1 = pointUndistorted[1];
+  const float_t r = sqrt(u0 * u0 + u1 * u1);
+  const float_t theta = atan(r);
+  const float_t theta2 = theta * theta;
+  const float_t theta4 = theta2 * theta2;
+  const float_t theta6 = theta4 * theta2;
+  const float_t theta8 = theta4 * theta4;
+  const float_t thetad = theta
       * (1 + k1 * theta2 + k2 * theta4 + k3 * theta6 + k4 * theta8);
 
-  const double scaling = (r > 1e-8) ? thetad / r : 1.0;
+  const float_t scaling = (r > 1e-8) ? thetad / r : 1.0;
   (*pointDistorted)[0] = scaling * u0;
   (*pointDistorted)[1] = scaling * u1;
 
-  Eigen::Matrix2d & J = *pointJacobian;
+  Matrix2f & J = *pointJacobian;
   if (r > 1e-8) {
     // mostly matlab generated...
-    double t2;
-    double t3;
-    double t4;
-    double t6;
-    double t7;
-    double t8;
-    double t9;
-    double t11;
-    double t17;
-    double t18;
-    double t19;
-    double t20;
-    double t25;
+    float_t t2;
+    float_t t3;
+    float_t t4;
+    float_t t6;
+    float_t t7;
+    float_t t8;
+    float_t t9;
+    float_t t11;
+    float_t t17;
+    float_t t18;
+    float_t t19;
+    float_t t20;
+    float_t t25;
 
     t2 = u0 * u0;
     t3 = u1 * u1;
@@ -277,14 +277,14 @@ bool EquidistantDistortion::distortWithExternalParameters(
         + t6 * t8 * t4 * u0;
     J(1, 1) = (t7 + t6 * t8 * t4 * u1) - t6 * t17 * t19 * u0 * u1;
     if (parameterJacobian) {
-      Eigen::Matrix2Xd & Ji = *parameterJacobian;
+      Matrix2Xf & Ji = *parameterJacobian;
       Ji.resize(2,NumDistortionIntrinsics);
       // mostly matlab generated...
-      double t6;
-      double t2;
-      double t3;
-      double t8;
-      double t10;
+      float_t t6;
+      float_t t2;
+      float_t t3;
+      float_t t8;
+      float_t t10;
 
       t6 = u0 * u0 + u1 * u1;
       t2 = atan(sqrt(t6));
@@ -313,27 +313,27 @@ bool EquidistantDistortion::distortWithExternalParameters(
 
   return true;
 }
-bool EquidistantDistortion::undistort(const Eigen::Vector2d & pointDistorted,
-                                      Eigen::Vector2d * pointUndistorted) const
+bool EquidistantDistortion::undistort(const Vector2f & pointDistorted,
+                                      Vector2f * pointUndistorted) const
 {
   // this is expensive: we solve with Gauss-Newton...
-  Eigen::Vector2d x_bar = pointDistorted;  // initialise at distorted point
+  Vector2f x_bar = pointDistorted;  // initialise at distorted point
   const int n = 5;  // just 5 iterations max.
-  Eigen::Matrix2d E;  // error Jacobian
+  Matrix2f E;  // error Jacobian
 
   bool success = false;
   for (int i = 0; i < n; i++) {
 
-    Eigen::Vector2d x_tmp;
+    Vector2f x_tmp;
 
     distort(x_bar, &x_tmp, &E);
 
-    Eigen::Vector2d e(pointDistorted - x_tmp);
-    Eigen::Vector2d du = (E.transpose() * E).inverse() * E.transpose() * e;
+    Vector2f e(pointDistorted - x_tmp);
+    Vector2f du = (E.transpose() * E).inverse() * E.transpose() * e;
 
     x_bar += du;
 
-    const double chi2 = e.dot(e);
+    const float_t chi2 = e.dot(e);
     if (chi2 < 1e-2) {
       success = true;
     }
@@ -348,28 +348,28 @@ bool EquidistantDistortion::undistort(const Eigen::Vector2d & pointDistorted,
 
   return success;
 }
-bool EquidistantDistortion::undistort(const Eigen::Vector2d & pointDistorted,
-                                      Eigen::Vector2d * pointUndistorted,
-                                      Eigen::Matrix2d * pointJacobian) const
+bool EquidistantDistortion::undistort(const Vector2f & pointDistorted,
+                                      Vector2f * pointUndistorted,
+                                      Matrix2f * pointJacobian) const
 {
   // this is expensive: we solve with Gauss-Newton...
-  Eigen::Vector2d x_bar = pointDistorted;  // initialise at distorted point
+  Vector2f x_bar = pointDistorted;  // initialise at distorted point
   const int n = 5;  // just 5 iterations max.
-  Eigen::Matrix2d E;  // error Jacobian
+  Matrix2f E;  // error Jacobian
 
   bool success = false;
   for (int i = 0; i < n; i++) {
 
-    Eigen::Vector2d x_tmp;
+    Vector2f x_tmp;
 
     distort(x_bar, &x_tmp, &E);
 
-    Eigen::Vector2d e(pointDistorted - x_tmp);
-    Eigen::Vector2d dx = (E.transpose() * E).inverse() * E.transpose() * e;
+    Vector2f e(pointDistorted - x_tmp);
+    Vector2f dx = (E.transpose() * E).inverse() * E.transpose() * e;
 
     x_bar += dx;
 
-    const double chi2 = e.dot(e);
+    const float_t chi2 = e.dot(e);
     if (chi2 < 1e-2) {
       success = true;
     }

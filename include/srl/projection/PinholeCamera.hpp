@@ -93,8 +93,8 @@ class PinholeCameraBase : public ProjectionBase {
   /// @param[in] undistortedImageCenterV The vertical centre in pixels.
   /// \return True on success.
   virtual bool initialiseUndistortMaps(int undistortedImageWidth, int undistortedImageHeight, 
-      double undistortedFocalLengthU, double undistortedFocalLengthV, 
-      double undistortedImageCenterU, double undistortedImageCenterV) = 0;
+      float_t undistortedFocalLengthU, float_t undistortedFocalLengthV, 
+      float_t undistortedImageCenterU, float_t undistortedImageCenterV) = 0;
 
   /// \brief Get undistorted image -- assumes initialiseUndistortMaps was called
   /// @param[in] srcImg The distorted input image.
@@ -108,19 +108,19 @@ class PinholeCameraBase : public ProjectionBase {
 
   /// \brief Get the focal length along the u-dimension.
   /// \return The horizontal focal length in pixels.
-  virtual double focalLengthU() const = 0;
+  virtual float_t focalLengthU() const = 0;
 
   /// \brief Get the focal length along the v-dimension.
   /// \return The vertical focal length in pixels.
-  virtual double focalLengthV() const = 0;
+  virtual float_t focalLengthV() const = 0;
 
   /// \brief Get the image centre along the u-dimension.
   /// \return The horizontal centre in pixels.
-  virtual double imageCenterU() const = 0;
+  virtual float_t imageCenterU() const = 0;
 
   /// \brief Get the focal image centre along the v-dimension.
   /// \return The vertical centre in pixels.
-  virtual double imageCenterV() const = 0;
+  virtual float_t imageCenterV() const = 0;
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
@@ -142,8 +142,8 @@ class PinholeCamera : public PinholeCameraBase
   /// @param[in] imageCenterU The horizontal centre in pixels.
   /// @param[in] imageCenterV The vertical centre in pixels.
   /// @param[in] distortion The distortion object to be used.
-  PinholeCamera(int imageWidth, int imageHeight, double focalLengthU,
-                double focalLengthV, double imageCenterU, double imageCenterV,
+  PinholeCamera(int imageWidth, int imageHeight, float_t focalLengthU,
+                float_t focalLengthV, float_t imageCenterU, float_t imageCenterV,
                 const distortion_t & distortion);
 
   /// \brief Destructor.
@@ -157,39 +157,39 @@ class PinholeCamera : public PinholeCameraBase
 
   /// \brief Get the focal length along the u-dimension.
   /// \return The horizontal focal length in pixels.
-  virtual double focalLengthU() const
+  virtual float_t focalLengthU() const
   {
     return fu_;
   }
 
   /// \brief Get the focal length along the v-dimension.
   /// \return The vertical focal length in pixels.
-  virtual double focalLengthV() const
+  virtual float_t focalLengthV() const
   {
     return fv_;
   }
 
   /// \brief Get the image centre along the u-dimension.
   /// \return The horizontal centre in pixels.
-  virtual double imageCenterU() const
+  virtual float_t imageCenterU() const
   {
     return cu_;
   }
 
   /// \brief Get the focal image centre along the v-dimension.
   /// \return The vertical centre in pixels.
-  virtual double imageCenterV() const
+  virtual float_t imageCenterV() const
   {
     return cv_;
   }
 
   /// \brief Get the intrinsics as a concatenated vector.
   /// \return The intrinsics as a concatenated vector.
-  inline void getIntrinsics(Eigen::VectorXd & intrinsics) const ;
+  inline void getIntrinsics(VectorXf & intrinsics) const ;
 
   /// \brief overwrite all intrinsics - use with caution !
   /// \param[in] intrinsics The intrinsics as a concatenated vector.
-  inline bool setIntrinsics(const Eigen::VectorXd & intrinsics);
+  inline bool setIntrinsics(const VectorXf & intrinsics);
 
   /// \brief Get the total number of intrinsics.
   /// \return Number of intrinsics parameters.
@@ -214,8 +214,8 @@ class PinholeCamera : public PinholeCameraBase
   /// @param[in] undistortedImageCenterV The vertical centre in pixels.
   /// \return True on success.
   virtual bool initialiseUndistortMaps(int undistortedImageWidth, int undistortedImageHeight, 
-      double undistortedFocalLengthU, double undistortedFocalLengthV, 
-      double undistortedImageCenterU, double undistortedImageCenterV);
+      float_t undistortedFocalLengthU, float_t undistortedFocalLengthV, 
+      float_t undistortedImageCenterU, float_t undistortedImageCenterV);
 
   /// \brief Get the model of the undistorted camera.
   /// \return The PinholeCamera without distortion associated with the undistorted image.
@@ -238,7 +238,7 @@ class PinholeCamera : public PinholeCameraBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   inline ProjectionStatus project(
-      const Eigen::Vector3d & point, Eigen::Vector2d * imagePoint) const;
+      const Vector3f & point, Vector2f * imagePoint) const;
 
   /// \brief Projects a Euclidean point to a 2d image point (projection).
   ///        Uses projection including distortion models.
@@ -249,9 +249,9 @@ class PinholeCamera : public PinholeCameraBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   inline ProjectionStatus project(
-      const Eigen::Vector3d & point, Eigen::Vector2d * imagePoint,
-      Eigen::Matrix<double, 2, 3> * pointJacobian,
-      Eigen::Matrix2Xd * intrinsicsJacobian = nullptr) const;
+      const Vector3f & point, Vector2f * imagePoint,
+      Matrixf<2, 3> * pointJacobian,
+      Matrix2Xf * intrinsicsJacobian = nullptr) const;
 
   /// \brief Projects a Euclidean point to a 2d image point (projection).
   ///        Uses projection including distortion models.
@@ -263,9 +263,9 @@ class PinholeCamera : public PinholeCameraBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   inline ProjectionStatus projectWithExternalParameters(
-      const Eigen::Vector3d & point, const Eigen::VectorXd & parameters,
-      Eigen::Vector2d * imagePoint, Eigen::Matrix<double, 2, 3> * pointJacobian,
-      Eigen::Matrix2Xd * intrinsicsJacobian = nullptr) const;
+      const Vector3f & point, const VectorXf & parameters,
+      Vector2f * imagePoint, Matrixf<2, 3> * pointJacobian,
+      Matrix2Xf * intrinsicsJacobian = nullptr) const;
 
   /// \brief Projects Euclidean points to 2d image points (projection) in a batch.
   ///        Uses projection including distortion models.
@@ -274,7 +274,7 @@ class PinholeCamera : public PinholeCameraBase
   /// @param[out] stati       Get information about the success of the projections. See
   ///                         \ref ProjectionStatus for more information.
   inline void projectBatch(
-      const Eigen::Matrix3Xd & points, Eigen::Matrix2Xd * imagePoints,
+      const Matrix3Xf & points, Matrix2Xf * imagePoints,
       std::vector<ProjectionStatus> * stati) const;
 
   /// \brief Projects a point in homogenous coordinates to a 2d image point (projection).
@@ -284,7 +284,7 @@ class PinholeCamera : public PinholeCameraBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   inline ProjectionStatus projectHomogeneous(
-      const Eigen::Vector4d & point, Eigen::Vector2d * imagePoint) const;
+      const Vector4f & point, Vector2f * imagePoint) const;
 
   /// \brief Projects a point in homogenous coordinates to a 2d image point (projection).
   ///        Uses projection including distortion models.
@@ -295,9 +295,9 @@ class PinholeCamera : public PinholeCameraBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   inline ProjectionStatus projectHomogeneous(
-      const Eigen::Vector4d & point, Eigen::Vector2d * imagePoint,
-      Eigen::Matrix<double, 2, 4> * pointJacobian,
-      Eigen::Matrix2Xd * intrinsicsJacobian = nullptr) const;
+      const Vector4f & point, Vector2f * imagePoint,
+      Matrixf<2, 4> * pointJacobian,
+      Matrix2Xf * intrinsicsJacobian = nullptr) const;
 
   /// \brief Projects a point in homogenous coordinates to a 2d image point (projection).
   ///        Uses projection including distortion models.
@@ -309,10 +309,10 @@ class PinholeCamera : public PinholeCameraBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   inline ProjectionStatus projectHomogeneousWithExternalParameters(
-      const Eigen::Vector4d & point, const Eigen::VectorXd & parameters,
-      Eigen::Vector2d * imagePoint,
-      Eigen::Matrix<double, 2, 4> * pointJacobian = nullptr,
-      Eigen::Matrix2Xd * intrinsicsJacobian = nullptr) const;
+      const Vector4f & point, const VectorXf & parameters,
+      Vector2f * imagePoint,
+      Matrixf<2, 4> * pointJacobian = nullptr,
+      Matrix2Xf * intrinsicsJacobian = nullptr) const;
 
   /// \brief Projects points in homogenous coordinates to 2d image points (projection) in a batch.
   ///        Uses projection including distortion models.
@@ -321,7 +321,7 @@ class PinholeCamera : public PinholeCameraBase
   /// @param[out] stati       Get information about the success of the projections. See
   ///                         \ref ProjectionStatus for more information.
   inline void projectHomogeneousBatch(
-      const Eigen::Matrix4Xd & points, Eigen::Matrix2Xd * imagePoints,
+      const Matrix4Xf & points, Matrix2Xf * imagePoints,
       std::vector<ProjectionStatus> * stati) const;
   /// @}
 
@@ -333,32 +333,32 @@ class PinholeCamera : public PinholeCameraBase
   /// @param[in]  imagePoint The image point.
   /// @param[out] direction  The Euclidean direction vector.
   /// @return     true on success.
-  inline bool backProject(const Eigen::Vector2d & imagePoint,
-                          Eigen::Vector3d * direction) const;
+  inline bool backProject(const Vector2f & imagePoint,
+                          Vector3f * direction) const;
 
   /// \brief Back-project a 2d image point into Euclidean space (direction vector).
   /// @param[in]  imagePoint         The image point.
   /// @param[out] direction          The Euclidean direction vector.
   /// @param[out] pointJacobian      Jacobian of the back-projection function  w.r.t. the point.
   /// @return     true on success.
-  inline bool backProject(const Eigen::Vector2d & imagePoint,
-                          Eigen::Vector3d * direction,
-                          Eigen::Matrix<double, 3, 2> * pointJacobian) const;
+  inline bool backProject(const Vector2f & imagePoint,
+                          Vector3f * direction,
+                          Matrixf<3, 2> * pointJacobian) const;
 
   /// \brief Back-project 2d image points into Euclidean space (direction vectors).
   /// @param[in]  imagePoints The image points (one point per column).
   /// @param[out] directions  The Euclidean direction vectors (one point per column).
   /// @param[out] success     Success of each of the back-projection
-  inline bool backProjectBatch(const Eigen::Matrix2Xd & imagePoints,
-                               Eigen::Matrix3Xd * directions,
+  inline bool backProjectBatch(const Matrix2Xf & imagePoints,
+                               Matrix3Xf * directions,
                                std::vector<bool> * success) const;
 
   /// \brief Back-project a 2d image point into homogeneous point (direction vector).
   /// @param[in]  imagePoint The image point.
   /// @param[out] direction  The homogeneous point as direction vector.
   /// @return     true on success.
-  inline bool backProjectHomogeneous(const Eigen::Vector2d & imagePoint,
-                                     Eigen::Vector4d * direction) const;
+  inline bool backProjectHomogeneous(const Vector2f & imagePoint,
+                                     Vector4f * direction) const;
 
   /// \brief Back-project a 2d image point into homogeneous point (direction vector).
   /// @param[in]  imagePoint         The image point.
@@ -366,15 +366,15 @@ class PinholeCamera : public PinholeCameraBase
   /// @param[out] pointJacobian      Jacobian of the back-projection function.
   /// @return     true on success.
   inline bool backProjectHomogeneous(
-      const Eigen::Vector2d & imagePoint, Eigen::Vector4d * direction,
-      Eigen::Matrix<double, 4, 2> * pointJacobian) const;
+      const Vector2f & imagePoint, Vector4f * direction,
+      Matrixf<4, 2> * pointJacobian) const;
 
   /// \brief Back-project 2d image points into homogeneous points (direction vectors).
   /// @param[in]  imagePoints The image points (one point per column).
   /// @param[out] directions  The homogeneous points as direction vectors (one point per column).
   /// @param[out] success     Success of each of the back-projection
-  inline bool backProjectHomogeneousBatch(const Eigen::Matrix2Xd & imagePoints,
-                                          Eigen::Matrix4Xd * directions,
+  inline bool backProjectHomogeneousBatch(const Matrix2Xf & imagePoints,
+                                          Matrix4Xf * directions,
                                           std::vector<bool> * success) const;
   /// @}
 
@@ -412,24 +412,24 @@ class PinholeCamera : public PinholeCameraBase
 
   distortion_t distortion_;  ///< the distortion to be used
 
-  Eigen::Matrix<double, NumIntrinsics, 1> intrinsics_;  ///< summary of all intrinsics parameters
-  double fu_;  ///< focalLengthU
-  double fv_;  ///< focalLengthV
-  double cu_;  ///< imageCenterU
-  double cv_;  ///< imageCenterV
-  double one_over_fu_;  ///< 1.0 / fu_
-  double one_over_fv_;  ///< 1.0 / fv_
-  double fu_over_fv_;  ///< fu_ / fv_
+  Matrixf<NumIntrinsics, 1> intrinsics_;  ///< summary of all intrinsics parameters
+  float_t fu_;  ///< focalLengthU
+  float_t fv_;  ///< focalLengthV
+  float_t cu_;  ///< imageCenterU
+  float_t cv_;  ///< imageCenterV
+  float_t one_over_fu_;  ///< 1.0 / fu_
+  float_t one_over_fv_;  ///< 1.0 / fv_
+  float_t fu_over_fv_;  ///< fu_ / fv_
 
   cv::Mat map_x_fast_; ///< OpenCV undistort fast map x-coordinates
   cv::Mat map_y_fast_; ///< OpenCV undistort fast map x-coordinates
 
   int undistortedImageWidth_ = 0;  ///< undistortedImageWidth The width in pixels.
   int undistortedImageHeight_ = 0;  ///< undistortedImageHeight The height in pixels.
-  double undistortedFocalLengthU_ = 0.0;  ///< undistortedFocalLengthU The horizontal focal length in pixels.
-  double undistortedFocalLengthV_ = 0.0;  ///< undistortedFocalLengthV The vertical focal length in pixels.
-  double undistortedImageCenterU_ = 0.0;  ///< undistortedImageCenterU The horizontal centre in pixels.
-  double undistortedImageCenterV_ = 0.0;  ///< undistortedImageCenterV The vertical centre in pixels.
+  float_t undistortedFocalLengthU_ = 0.0;  ///< undistortedFocalLengthU The horizontal focal length in pixels.
+  float_t undistortedFocalLengthV_ = 0.0;  ///< undistortedFocalLengthV The vertical focal length in pixels.
+  float_t undistortedImageCenterU_ = 0.0;  ///< undistortedImageCenterU The horizontal centre in pixels.
+  float_t undistortedImageCenterV_ = 0.0;  ///< undistortedImageCenterV The vertical centre in pixels.
 
 };
 

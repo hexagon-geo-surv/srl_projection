@@ -61,7 +61,7 @@ class EquidistantDistortion : public DistortionBase
   /// @param[in] k2 equidistant parameter 2
   /// @param[in] k3 equidistant parameter 3
   /// @param[in] k4 equidistant parameter 4
-  inline EquidistantDistortion(double k1, double k2, double k3, double k4);
+  inline EquidistantDistortion(float_t k1, float_t k2, float_t k3, float_t k4);
   //////////////////////////////////////////////////////////////
   /// \name Methods related to generic parameters
   /// @{
@@ -69,10 +69,10 @@ class EquidistantDistortion : public DistortionBase
   /// \brief set the generic parameters
   /// @param[in] parameters Parameter vector -- length must correspond numDistortionIntrinsics().
   /// @return    True if the requirements were followed.
-  inline bool setParameters(const Eigen::VectorXd & parameters);
+  inline bool setParameters(const VectorXf & parameters);
 
   /// \brief Obtain the generic parameters.
-  inline bool getParameters(Eigen::VectorXd & parameters) const
+  inline bool getParameters(VectorXf & parameters) const
   {
     parameters = parameters_;
     return true;
@@ -112,8 +112,8 @@ class EquidistantDistortion : public DistortionBase
   /// @param[in]  pointUndistorted The undistorted normalised (!) image point.
   /// @param[out] pointDistorted   The distorted normalised (!) image point.
   /// @return     True on success (no singularity)
-  inline bool distort(const Eigen::Vector2d & pointUndistorted,
-                      Eigen::Vector2d * pointDistorted) const;
+  inline bool distort(const Vector2f & pointUndistorted,
+                      Vector2f * pointDistorted) const;
 
   /// \brief Distortion and Jacobians.
   /// @param[in]  pointUndistorted  The undistorted normalised (!) image point.
@@ -121,10 +121,10 @@ class EquidistantDistortion : public DistortionBase
   /// @param[out] pointJacobian     The Jacobian w.r.t. changes on the image point.
   /// @param[out] parameterJacobian The Jacobian w.r.t. changes on the intrinsics vector.
   /// @return     True on success (no singularity)
-  inline bool distort(const Eigen::Vector2d & pointUndistorted,
-                      Eigen::Vector2d * pointDistorted,
-                      Eigen::Matrix2d * pointJacobian,
-                      Eigen::Matrix2Xd * parameterJacobian = nullptr) const;
+  inline bool distort(const Vector2f & pointUndistorted,
+                      Vector2f * pointDistorted,
+                      Matrix2f * pointJacobian,
+                      Matrix2Xf * parameterJacobian = nullptr) const;
 
   /// \brief Distortion and Jacobians using external distortion intrinsics parameters.
   /// @param[in]  pointUndistorted  The undistorted normalised (!) image point.
@@ -134,10 +134,10 @@ class EquidistantDistortion : public DistortionBase
   /// @param[out] parameterJacobian The Jacobian w.r.t. changes on the intrinsics vector.
   /// @return     True on success (no singularity)
   inline bool distortWithExternalParameters(
-      const Eigen::Vector2d & pointUndistorted,
-      const Eigen::VectorXd & parameters, Eigen::Vector2d * pointDistorted,
-      Eigen::Matrix2d * pointJacobian = nullptr,
-      Eigen::Matrix2Xd * parameterJacobian = nullptr) const;
+      const Vector2f & pointUndistorted,
+      const VectorXf & parameters, Vector2f * pointDistorted,
+      Matrix2f * pointJacobian = nullptr,
+      Matrix2Xf * parameterJacobian = nullptr) const;
   /// @}
 
   //////////////////////////////////////////////////////////////
@@ -148,28 +148,28 @@ class EquidistantDistortion : public DistortionBase
   /// @param[in]  pointDistorted   The distorted normalised (!) image point.
   /// @param[out] pointUndistorted The undistorted normalised (!) image point.
   /// @return     True on success (no singularity)
-  inline bool undistort(const Eigen::Vector2d & pointDistorted,
-                        Eigen::Vector2d * pointUndistorted) const;
+  inline bool undistort(const Vector2f & pointDistorted,
+                        Vector2f * pointUndistorted) const;
 
   /// \brief Undistortion only
     /// @param[in]  pointDistorted   The distorted normalised (!) image point.
     /// @param[out] pointUndistorted The undistorted normalised (!) image point.
     /// @param[out] pointJacobian    The Jacobian w.r.t. changes on the image point.
     /// @return     True on success (no singularity)
-  inline bool undistort(const Eigen::Vector2d & pointDistorted,
-                        Eigen::Vector2d * pointUndistorted,
-                        Eigen::Matrix2d * pointJacobian) const;
+  inline bool undistort(const Vector2f & pointDistorted,
+                        Vector2f * pointUndistorted,
+                        Matrix2f * pointJacobian) const;
   /// @}
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
  protected:
-  Eigen::Matrix<double, NumDistortionIntrinsics, 1> parameters_;  ///< all distortion parameters
+  Matrixf<NumDistortionIntrinsics, 1> parameters_;  ///< all distortion parameters
 
-  double k1_;  ///< radial parameter 1
-  double k2_;  ///< radial parameter 2
-  double k3_;  ///< tangential parameter 1
-  double k4_;  ///< tangential parameter 2
+  float_t k1_;  ///< radial parameter 1
+  float_t k2_;  ///< radial parameter 2
+  float_t k3_;  ///< tangential parameter 1
+  float_t k4_;  ///< tangential parameter 2
 };
 
 }  // namespace projection
