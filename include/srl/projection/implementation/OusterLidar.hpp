@@ -44,8 +44,8 @@ namespace srl {
 // \brief Namespace for camera-related functionality.
 namespace projection {
 
-OusterLidar::OusterLidar(int imageWidth, int imageHeight, const Eigen::VectorXd & beamAzimuthAngles,
-                         const Eigen::VectorXd & beamElevationAngles)
+OusterLidar::OusterLidar(int imageWidth, int imageHeight, const VectorXf & beamAzimuthAngles,
+                         const VectorXf & beamElevationAngles)
     : ProjectionBase(imageWidth, imageHeight),
       beamAzimuthAngles_(beamAzimuthAngles), beamElevationAngles_(beamElevationAngles)
 {
@@ -56,7 +56,7 @@ OusterLidar::OusterLidar(int imageWidth, int imageHeight, const Eigen::VectorXd 
 
 // Projects a Euclidean point to a 2d image point (projection).
 ProjectionStatus OusterLidar::project(
-    const Eigen::Vector3d & point, Eigen::Vector2d * imagePoint) const
+    const Vector3f & point, Vector2f * imagePoint) const
 {
   // handle singularity
   if (point.norm() < 1.0e-12) {
@@ -64,9 +64,9 @@ ProjectionStatus OusterLidar::project(
   }
 
   // compute azimuth and elevation angles (projection) [rad]
-  const double R = sqrt(point[0]*point[0] + point[1]*point[1] + point[2]*point[2]);
-  const double azimuth = (2.0 * M_PI - std::atan2(point[1], point[0])) * 360.0 / (2 * M_PI);
-  const double elevation = std::asin(point[2]/R) * 360.0 / (2 * M_PI);
+  const float_t R = sqrt(point[0]*point[0] + point[1]*point[1] + point[2]*point[2]);
+  const float_t azimuth = (2.0 * M_PI - std::atan2(point[1], point[0])) * 360.0 / (2 * M_PI);
+  const float_t elevation = std::asin(point[2]/R) * 360.0 / (2 * M_PI);
 
   // check bounds
   if(elevation > beamElevationAngles_[0]) {
@@ -80,7 +80,7 @@ ProjectionStatus OusterLidar::project(
   bool found = false;
   int i = 1;
   for(; i < beamElevationAngles_.rows(); ++i) {
-    if(double(beamElevationAngles_[i]) < elevation) {
+    if(float_t(beamElevationAngles_[i]) < elevation) {
       found = true;
       break;
     }
@@ -90,9 +90,9 @@ ProjectionStatus OusterLidar::project(
   }
 
   // for interpolation
-  const double r = (elevation-beamElevationAngles_[i])
+  const float_t r = (elevation-beamElevationAngles_[i])
       /(beamElevationAngles_[i-1] - beamElevationAngles_[i]);
-  const double azimuthOffset = (1.0 - r) * beamAzimuthAngles_[i] + r * beamAzimuthAngles_[i-1];
+  const float_t azimuthOffset = (1.0 - r) * beamAzimuthAngles_[i] + r * beamAzimuthAngles_[i-1];
 
   // scale and offset
   (*imagePoint)[0] = (azimuth - azimuthOffset)/360.0 * imageWidth_;
@@ -115,9 +115,9 @@ ProjectionStatus OusterLidar::project(
 
 // Projects a Euclidean point to a 2d image point (projection).
 ProjectionStatus OusterLidar::project(
-    const Eigen::Vector3d & point, Eigen::Vector2d * imagePoint,
-    Eigen::Matrix<double, 2, 3> * pointJacobian,
-    Eigen::Matrix2Xd * intrinsicsJacobian) const
+    const Vector3f & point, Vector2f * imagePoint,
+    Matrixf<2, 3> * pointJacobian,
+    Matrix2Xf * intrinsicsJacobian) const
 {
   // handle singularity
   if (point.norm() < 1.0e-12) {
@@ -125,9 +125,9 @@ ProjectionStatus OusterLidar::project(
   }
 
   // compute azimuth and elevation angles (projection) [rad]
-  const double R = sqrt(point[0]*point[0] + point[1]*point[1] + point[2]*point[2]);
-  const double azimuth = (2.0 * M_PI - std::atan2(point[1], point[0])) * 360.0 / (2 * M_PI);
-  const double elevation = std::asin(point[2]/R) * 360.0 / (2 * M_PI);
+  const float_t R = sqrt(point[0]*point[0] + point[1]*point[1] + point[2]*point[2]);
+  const float_t azimuth = (2.0 * M_PI - std::atan2(point[1], point[0])) * 360.0 / (2 * M_PI);
+  const float_t elevation = std::asin(point[2]/R) * 360.0 / (2 * M_PI);
 
   // check bounds
   if(elevation > beamElevationAngles_[0]) {
@@ -141,7 +141,7 @@ ProjectionStatus OusterLidar::project(
   bool found = false;
   int i = 1;
   for(; i < beamElevationAngles_.rows(); ++i) {
-    if(double(beamElevationAngles_[i]) < elevation) {
+    if(float_t(beamElevationAngles_[i]) < elevation) {
       found = true;
       break;
     }
@@ -151,12 +151,12 @@ ProjectionStatus OusterLidar::project(
   }
 
   // for interpolation
-  const double scalingElevation = 1.0/(beamElevationAngles_[i-1] - beamElevationAngles_[i]);
-  const double r = (elevation-beamElevationAngles_[i]) * scalingElevation;
-  const double azimuthOffset = (1.0 - r) * beamAzimuthAngles_[i] + r * beamAzimuthAngles_[i-1];
+  const float_t scalingElevation = 1.0/(beamElevationAngles_[i-1] - beamElevationAngles_[i]);
+  const float_t r = (elevation-beamElevationAngles_[i]) * scalingElevation;
+  const float_t azimuthOffset = (1.0 - r) * beamAzimuthAngles_[i] + r * beamAzimuthAngles_[i-1];
 
   // scale and offset
-  const double scalingAzimuth = imageWidth_/360.0;
+  const float_t scalingAzimuth = imageWidth_/360.0;
   (*imagePoint)[0] = (azimuth - azimuthOffset) * scalingAzimuth;
   (*imagePoint)[1] = i - r;
 
@@ -171,9 +171,9 @@ ProjectionStatus OusterLidar::project(
   // Jacobians
   if(pointJacobian) {
     pointJacobian->setZero();
-    const double R2 = point[0]*point[0] + point[1]*point[1];
-    const double sqrt_R2 = sqrt(R2);
-    const double D2 = R2 + point[2]*point[2];
+    const float_t R2 = point[0]*point[0] + point[1]*point[1];
+    const float_t sqrt_R2 = sqrt(R2);
+    const float_t D2 = R2 + point[2]*point[2];
     //(*pointJacobian)(0,0) = -(point[1] * scalingAzimuth)/R2;
     //(*pointJacobian)(0,1) = (point[0] * scalingAzimuth)/R2;
     //(*pointJacobian)(0,2) = 0.0; /// \todo
@@ -201,9 +201,9 @@ ProjectionStatus OusterLidar::project(
 
 // Projects a Euclidean point to a 2d image point (projection).
 ProjectionStatus OusterLidar::projectWithExternalParameters(
-    const Eigen::Vector3d &, const Eigen::VectorXd &,
-    Eigen::Vector2d *, Eigen::Matrix<double, 2, 3> *,
-    Eigen::Matrix2Xd *) const
+    const Vector3f &, const VectorXf &,
+    Vector2f *, Matrixf<2, 3> *,
+    Matrix2Xf *) const
 {
   throw std::runtime_error("external parameters projection for OusterLidar not implemented");
   return ProjectionStatus::Invalid;
@@ -211,13 +211,13 @@ ProjectionStatus OusterLidar::projectWithExternalParameters(
 
 // Projects Euclidean points to 2d image points (projection) in a batch.
 void OusterLidar::projectBatch(
-    const Eigen::Matrix3Xd & points, Eigen::Matrix2Xd * imagePoints,
+    const Matrix3Xf & points, Matrix2Xf * imagePoints,
     std::vector<ProjectionStatus> * stati) const
 {
   const int numPoints = points.cols();
   for (int i = 0; i < numPoints; ++i) {
-    Eigen::Vector3d point = points.col(i);
-    Eigen::Vector2d imagePoint;
+    Vector3f point = points.col(i);
+    Vector2f imagePoint;
     ProjectionStatus status = project(point, &imagePoint);
     imagePoints->col(i) = imagePoint;
     if(stati)
@@ -227,9 +227,9 @@ void OusterLidar::projectBatch(
 
 // Projects a point in homogenous coordinates to a 2d image point (projection).
 ProjectionStatus OusterLidar::projectHomogeneous(
-    const Eigen::Vector4d & point, Eigen::Vector2d * imagePoint) const
+    const Vector4f & point, Vector2f * imagePoint) const
 {
-  Eigen::Vector3d head = point.head<3>();
+  Vector3f head = point.head<3>();
   if (point[3] < 0) {
     return project(-head, imagePoint);
   } else {
@@ -239,28 +239,28 @@ ProjectionStatus OusterLidar::projectHomogeneous(
 
 // Projects a point in homogenous coordinates to a 2d image point (projection).
 ProjectionStatus OusterLidar::projectHomogeneous(
-    const Eigen::Vector4d & point, Eigen::Vector2d * imagePoint,
-    Eigen::Matrix<double, 2, 4> * pointJacobian,
-    Eigen::Matrix2Xd * intrinsicsJacobian) const
+    const Vector4f & point, Vector2f * imagePoint,
+    Matrixf<2, 4> * pointJacobian,
+    Matrix2Xf * intrinsicsJacobian) const
 {
-  Eigen::Vector3d head = point.head<3>();
-  Eigen::Matrix<double, 2, 3> pointJacobian3;
+  Vector3f head = point.head<3>();
+  Matrixf<2, 3> pointJacobian3;
   ProjectionStatus status;
   if (point[3] < 0) {
     status = project(-head, imagePoint, &pointJacobian3, intrinsicsJacobian);
   } else {
     status = project(head, imagePoint, &pointJacobian3, intrinsicsJacobian);
   }
-  pointJacobian->template bottomRightCorner<2, 1>() = Eigen::Vector2d::Zero();
+  pointJacobian->template bottomRightCorner<2, 1>() = Vector2f::Zero();
   pointJacobian->template topLeftCorner<2, 3>() = pointJacobian3;
   return status;
 }
 
 // Projects a point in homogenous coordinates to a 2d image point (projection).
 ProjectionStatus OusterLidar::projectHomogeneousWithExternalParameters(
-    const Eigen::Vector4d &, const Eigen::VectorXd &,
-    Eigen::Vector2d *, Eigen::Matrix<double, 2, 4> *,
-    Eigen::Matrix2Xd *) const
+    const Vector4f &, const VectorXf &,
+    Vector2f *, Matrixf<2, 4> *,
+    Matrix2Xf *) const
 {
   throw std::runtime_error("intrinsics Jacobian for OusterLidar not implemented");
   return ProjectionStatus::Invalid;
@@ -268,13 +268,13 @@ ProjectionStatus OusterLidar::projectHomogeneousWithExternalParameters(
 
 // Projects points in homogenous coordinates to 2d image points (projection) in a batch.
 void OusterLidar::projectHomogeneousBatch(
-    const Eigen::Matrix4Xd & points, Eigen::Matrix2Xd * imagePoints,
+    const Matrix4Xf & points, Matrix2Xf * imagePoints,
     std::vector<ProjectionStatus> * stati) const
 {
   const int numPoints = points.cols();
   for (int i = 0; i < numPoints; ++i) {
-    Eigen::Vector4d point = points.col(i);
-    Eigen::Vector2d imagePoint;
+    Vector4f point = points.col(i);
+    Vector2f imagePoint;
     ProjectionStatus status = projectHomogeneous(point, &imagePoint);
     imagePoints->col(i) = imagePoint;
     if(stati)
@@ -287,7 +287,7 @@ void OusterLidar::projectHomogeneousBatch(
 
 // Back-project a 2d image point into Euclidean space (direction vector).
 bool OusterLidar::backProject(
-    const Eigen::Vector2d & imagePoint, Eigen::Vector3d * direction) const
+    const Vector2f & imagePoint, Vector3f * direction) const
 {
   // adapted from
   // https://github.com/ouster-lidar/ouster_example/blob/master/ouster_client/src/os1_util.cpp
@@ -295,15 +295,15 @@ bool OusterLidar::backProject(
   // compute elevation and azimuth angles from pixel coordinates with interpolation
   const uint32_t v0 = std::floor(imagePoint[1]);
   const uint32_t v1 = std::ceil(imagePoint[1]);
-  const double r = imagePoint[1] - v0;
+  const float_t r = imagePoint[1] - v0;
 
   // azimuth angle with interpolated offset
-  const double azimuth0 = 2.0 * M_PI * imagePoint[0] / double(imageWidth_);
-  const double azimuth = ((1.0-r) * beamAzimuthAngles_[v0] +  r * beamAzimuthAngles_[v1])
+  const float_t azimuth0 = 2.0 * M_PI * imagePoint[0] / float_t(imageWidth_);
+  const float_t azimuth = ((1.0-r) * beamAzimuthAngles_[v0] +  r * beamAzimuthAngles_[v1])
       * 2.0 * M_PI / 360.0 + azimuth0;
 
   // interpolate elevation angle
-  double elevation = ((1.0-r) * beamElevationAngles_[v0] + r * beamElevationAngles_[v1])
+  float_t elevation = ((1.0-r) * beamElevationAngles_[v0] + r * beamElevationAngles_[v1])
       * 2.0 * M_PI / 360.0;
 
   // project as ray
@@ -316,8 +316,8 @@ bool OusterLidar::backProject(
 
 // Back-project a 2d image point into Euclidean space (direction vector).
 inline bool OusterLidar::backProject(
-    const Eigen::Vector2d & imagePoint, Eigen::Vector3d * direction,
-    Eigen::Matrix<double, 3, 2> * pointJacobian) const
+    const Vector2f & imagePoint, Vector3f * direction,
+    Matrixf<3, 2> * pointJacobian) const
 {
   // adapted from
   // https://github.com/ouster-lidar/ouster_example/blob/master/ouster_client/src/os1_util.cpp
@@ -325,15 +325,15 @@ inline bool OusterLidar::backProject(
   // compute elevation and azimuth angles from pixel coordinates with interpolation
   const uint32_t v0 = std::floor(imagePoint[1]);
   const uint32_t v1 = std::ceil(imagePoint[1]);
-  const double r = imagePoint[1] - v0;
+  const float_t r = imagePoint[1] - v0;
 
   // azimuth angle with interpolated offset
-  const double azimuth0 = 2.0 * M_PI * imagePoint[0] / double(imageWidth_);
-  const double azimuth = ((1.0-r) * beamAzimuthAngles_[v0] +  r * beamAzimuthAngles_[v1])
+  const float_t azimuth0 = 2.0 * M_PI * imagePoint[0] / float_t(imageWidth_);
+  const float_t azimuth = ((1.0-r) * beamAzimuthAngles_[v0] +  r * beamAzimuthAngles_[v1])
       * 2.0 * M_PI / 360.0 + azimuth0;
 
   // interpolate elevation angle
-  double elevation = ((1.0-r) * beamElevationAngles_[v0] + r * beamElevationAngles_[v1])
+  float_t elevation = ((1.0-r) * beamElevationAngles_[v0] + r * beamElevationAngles_[v1])
       * 2.0 * M_PI / 360.0;
 
   // project as ray
@@ -349,14 +349,14 @@ inline bool OusterLidar::backProject(
 
 // Back-project 2d image points into Euclidean space (direction vectors).
 bool OusterLidar::backProjectBatch(
-    const Eigen::Matrix2Xd & imagePoints, Eigen::Matrix3Xd * directions,
+    const Matrix2Xf & imagePoints, Matrix3Xf * directions,
     std::vector<bool> * success) const
 {
   const int numPoints = imagePoints.cols();
-  directions->row(3) = Eigen::VectorXd::Ones(numPoints);
+  directions->row(3) = VectorXf::Ones(numPoints);
   for (int i = 0; i < numPoints; ++i) {
-    Eigen::Vector2d imagePoint = imagePoints.col(i);
-    Eigen::Vector3d point;
+    Vector2f imagePoint = imagePoints.col(i);
+    Vector3f point;
     bool suc = backProject(imagePoint, &point);
     if(success)
       success->push_back(suc);
@@ -367,9 +367,9 @@ bool OusterLidar::backProjectBatch(
 
 // Back-project a 2d image point into homogeneous point (direction vector).
 bool OusterLidar::backProjectHomogeneous(
-    const Eigen::Vector2d & imagePoint, Eigen::Vector4d * direction) const
+    const Vector2f & imagePoint, Vector4f * direction) const
 {
-  Eigen::Vector3d ray;
+  Vector3f ray;
   bool success = backProject(imagePoint, &ray);
   direction->template head<3>() = ray;
   (*direction)[3] = 1.0;  // arbitrary
@@ -378,29 +378,29 @@ bool OusterLidar::backProjectHomogeneous(
 
 // Back-project a 2d image point into homogeneous point (direction vector).
 bool OusterLidar::backProjectHomogeneous(
-    const Eigen::Vector2d & imagePoint, Eigen::Vector4d * direction,
-    Eigen::Matrix<double, 4, 2> * pointJacobian) const
+    const Vector2f & imagePoint, Vector4f * direction,
+    Matrixf<4, 2> * pointJacobian) const
 {
-  Eigen::Vector3d ray;
-  Eigen::Matrix<double, 3, 2> pointJacobian3;
+  Vector3f ray;
+  Matrixf<3, 2> pointJacobian3;
   bool success = backProject(imagePoint, &ray, &pointJacobian3);
   direction->template head<3>() = ray;
   (*direction)[4] = 1.0;  // arbitrary
-  pointJacobian->template bottomRightCorner<1,2>() = Eigen::Vector2d::Zero();
+  pointJacobian->template bottomRightCorner<1,2>() = Vector2f::Zero();
   pointJacobian->template topLeftCorner<3, 2>() = pointJacobian3;
   return success;
 }
 
 // Back-project 2d image points into homogeneous points (direction vectors).
 bool OusterLidar::backProjectHomogeneousBatch(
-    const Eigen::Matrix2Xd & imagePoints, Eigen::Matrix4Xd * directions,
+    const Matrix2Xf & imagePoints, Matrix4Xf * directions,
     std::vector<bool> * success) const
 {
   const int numPoints = imagePoints.cols();
-  directions->row(3) = Eigen::VectorXd::Ones(numPoints);
+  directions->row(3) = VectorXf::Ones(numPoints);
   for (int i = 0; i < numPoints; ++i) {
-    Eigen::Vector2d imagePoint = imagePoints.col(i);
-    Eigen::Vector3d point;
+    Vector2f imagePoint = imagePoints.col(i);
+    Vector3f point;
     bool suc = backProject(imagePoint, &point);
     if(success)
       success->push_back(suc);
@@ -409,28 +409,28 @@ bool OusterLidar::backProjectHomogeneousBatch(
   return true;
 }
 
-Eigen::VectorXd OusterLidar::beamAzimuthAngles() const
+VectorXf OusterLidar::beamAzimuthAngles() const
 {
   return beamAzimuthAngles_;
 }
 
-void OusterLidar::setBeamAzimuthAngles(const Eigen::VectorXd &beamAzimuthAngles)
+void OusterLidar::setBeamAzimuthAngles(const VectorXf &beamAzimuthAngles)
 {
   beamAzimuthAngles_ = beamAzimuthAngles;
 }
 
-Eigen::VectorXd OusterLidar::beamElevationAngles() const
+VectorXf OusterLidar::beamElevationAngles() const
 {
   return beamElevationAngles_;
 }
 
-void OusterLidar::setBeamElevationAngles(const Eigen::VectorXd &beamElevationAngles)
+void OusterLidar::setBeamElevationAngles(const VectorXf &beamElevationAngles)
 {
   beamElevationAngles_ = beamElevationAngles;
 }
 
 // needed for test instance:
-const Eigen::VectorXd beam_altitude_angles = (Eigen::VectorXd(64) <<
+const VectorXf beam_altitude_angles = (VectorXf(64) <<
     16.611,  16.084,  15.557,  15.029,  14.502,  13.975,  13.447,  12.920,
     12.393,  11.865,  11.338,  10.811,  10.283,  9.756,   9.229,   8.701,
     8.174,   7.646,   7.119,   6.592,   6.064,   5.537,   5.010,   4.482,
@@ -440,7 +440,7 @@ const Eigen::VectorXd beam_altitude_angles = (Eigen::VectorXd(64) <<
     -8.701,  -9.229,  -9.756,  -10.283, -10.811, -11.338, -11.865, -12.393,
     -12.920, -13.447, -13.975, -14.502, -15.029, -15.557, -16.084, -16.611).finished();
 
-const Eigen::VectorXd beam_azimuth_angles = (Eigen::VectorXd(64) <<
+const VectorXf beam_azimuth_angles = (VectorXf(64) <<
     3.164, 1.055, -1.055, -3.164, 3.164, 1.055, -1.055, -3.164,
     3.164, 1.055, -1.055, -3.164, 3.164, 1.055, -1.055, -3.164,
     3.164, 1.055, -1.055, -3.164, 3.164, 1.055, -1.055, -3.164,
@@ -464,13 +464,13 @@ OusterLidar OusterLidar::testObject()
 
 // \brief Get the intrinsics as a concatenated vector.
 // \param[out] intrinsics The intrinsics as a concatenated vector.
-void OusterLidar::getIntrinsics(Eigen::VectorXd &) const {
+void OusterLidar::getIntrinsics(VectorXf &) const {
   throw std::runtime_error("not implemented");
 }
 
 // \brief overwrite all intrinsics - use with caution !
 // \param[in] intrinsics The intrinsics as a concatenated vector.
-bool OusterLidar::setIntrinsics(const Eigen::VectorXd &) {
+bool OusterLidar::setIntrinsics(const VectorXf &) {
   throw std::runtime_error("not implemented");
 }
 

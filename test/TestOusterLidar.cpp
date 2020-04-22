@@ -34,8 +34,11 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <memory>
+#include <type_traits>
 #include <vector>
 #include "srl/projection/OusterLidar.hpp"
+
+
 
 TEST(OusterLidar, functions)
 {
@@ -46,44 +49,45 @@ TEST(OusterLidar, functions)
   // try quite a lot of points:
   for (size_t i = 0; i < NUM_POINTS; ++i) {
     // create a random point in the field of view:
-    Eigen::Vector2d imagePoint = ousterLidar.createRandomImagePoint();
+    srl::Vector2f imagePoint = ousterLidar.createRandomImagePoint();
 
     // backProject
-    Eigen::Vector3d ray;
+    srl::Vector3f ray;
     ASSERT_TRUE(ousterLidar.backProject(imagePoint, &ray)) <<
                       "unsuccessful back projection";
 
     // randomise distance
     ray.normalize();
-    ray *= (0.2 + 8 * (Eigen::Vector2d::Random()[0] + 1.0));
+    ray *= (0.2 + 8 * (srl::Vector2f::Random()[0] + 1.0));
 
     // project
-    Eigen::Vector2d imagePoint2;
-    Eigen::Matrix<double, 2, 3> J;
+    srl::Vector2f imagePoint2;
+    srl::Matrixf<2, 3> J;
     ASSERT_TRUE(ousterLidar.project(ray, &imagePoint2, &J, nullptr)
             == srl::projection::ProjectionStatus::Successful) <<
                       "unsuccessful projection";
 
     // check they are the same
-    ASSERT_TRUE((imagePoint2 - imagePoint).norm() < 0.01) <<
+    ASSERT_LT((imagePoint2 - imagePoint).norm(), 0.01) <<
                       "project/unproject failure";
 
     // check point Jacobian vs. NumDiff
-    const double dp = 1.0e-7;
-    Eigen::Matrix<double, 2, 3> J_numDiff;
+    const srl::float_t dp = std::is_same<srl::float_t, double>::value ? 1.0e-7 : 1.0e-5;
+    srl::Matrixf<2, 3> J_numDiff;
     for (size_t d = 0; d < 3; ++d) {
-      Eigen::Vector3d point_p = ray
-          + Eigen::Vector3d(d == 0 ? dp : 0, d == 1 ? dp : 0,
+      srl::Vector3f point_p = ray
+          + srl::Vector3f(d == 0 ? dp : 0, d == 1 ? dp : 0,
                             d == 2 ? dp : 0);
-      Eigen::Vector3d point_m = ray
-          - Eigen::Vector3d(d == 0 ? dp : 0, d == 1 ? dp : 0,
+      srl::Vector3f point_m = ray
+          - srl::Vector3f(d == 0 ? dp : 0, d == 1 ? dp : 0,
                             d == 2 ? dp : 0);
-      Eigen::Vector2d imagePoint_p (-1.f, -1.f);
-      Eigen::Vector2d imagePoint_m (-1.f, -1.f);
+      srl::Vector2f imagePoint_p (-1.f, -1.f);
+      srl::Vector2f imagePoint_m (-1.f, -1.f);
       ASSERT_EQ(ousterLidar.project(point_p, &imagePoint_p), srl::projection::ProjectionStatus::Successful);
       ASSERT_EQ(ousterLidar.project(point_m, &imagePoint_m), srl::projection::ProjectionStatus::Successful);
       J_numDiff.col(d) = (imagePoint_p - imagePoint_m) / (2 * dp);
     }
-    ASSERT_TRUE((J_numDiff - J).norm() < 0.0001) << "Jacobian Verification failed";
+    const srl::float_t threshold = std::is_same<srl::float_t, double>::value ? 1e-4 : 26;
+    ASSERT_LT((J_numDiff - J).norm(), threshold) << "Jacobian Verification failed";
   }
 }

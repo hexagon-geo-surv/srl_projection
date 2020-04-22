@@ -68,8 +68,8 @@ class OusterLidar : public ProjectionBase
   /// @param[in] imageHeight The height in pixels.
   /// @param[in] beamAzimuthAngles The azimuth start angles per scan row.
   /// @param[in] beamElevationAngles The elevation angle per scan row.
-  inline OusterLidar(int imageWidth, int imageHeight, const Eigen::VectorXd & beamAzimuthAngles,
-              const Eigen::VectorXd & beamElevationAngles);
+  inline OusterLidar(int imageWidth, int imageHeight, const VectorXf & beamAzimuthAngles,
+              const VectorXf & beamElevationAngles);
 
   /// \brief Destructor.
   virtual ~OusterLidar()
@@ -78,11 +78,11 @@ class OusterLidar : public ProjectionBase
 
   /// \brief Get the intrinsics as a concatenated vector.
   /// \param[out] intrinsics The intrinsics as a concatenated vector.
-  inline void getIntrinsics(Eigen::VectorXd & intrinsics) const;
+  inline void getIntrinsics(VectorXf & intrinsics) const;
 
   /// \brief overwrite all intrinsics - use with caution !
   /// \param[in] intrinsics The intrinsics as a concatenated vector.
-  inline bool setIntrinsics(const Eigen::VectorXd & intrinsics);
+  inline bool setIntrinsics(const VectorXf & intrinsics);
 
   /// \brief Get the total number of intrinsics.
   /// \return Number of intrinsics parameters.
@@ -102,7 +102,7 @@ class OusterLidar : public ProjectionBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   inline ProjectionStatus project(
-      const Eigen::Vector3d & point, Eigen::Vector2d * imagePoint) const;
+      const Vector3f & point, Vector2f * imagePoint) const;
 
   /// \brief Projects a Euclidean point to a 2d image point (projection).
   ///        Uses projection including distortion models.
@@ -113,9 +113,9 @@ class OusterLidar : public ProjectionBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   inline ProjectionStatus project(
-      const Eigen::Vector3d & point, Eigen::Vector2d * imagePoint,
-      Eigen::Matrix<double, 2, 3> * pointJacobian,
-      Eigen::Matrix2Xd * intrinsicsJacobian = nullptr) const;
+      const Vector3f & point, Vector2f * imagePoint,
+      Matrixf<2, 3> * pointJacobian,
+      Matrix2Xf * intrinsicsJacobian = nullptr) const;
 
   /// \brief Projects a Euclidean point to a 2d image point (projection).
   ///        Uses projection including distortion models.
@@ -127,9 +127,9 @@ class OusterLidar : public ProjectionBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   inline ProjectionStatus projectWithExternalParameters(
-      const Eigen::Vector3d & point, const Eigen::VectorXd & parameters,
-      Eigen::Vector2d * imagePoint, Eigen::Matrix<double, 2, 3> * pointJacobian,
-      Eigen::Matrix2Xd * intrinsicsJacobian = nullptr) const;
+      const Vector3f & point, const VectorXf & parameters,
+      Vector2f * imagePoint, Matrixf<2, 3> * pointJacobian,
+      Matrix2Xf * intrinsicsJacobian = nullptr) const;
 
   /// \brief Projects Euclidean points to 2d image points (projection) in a batch.
   ///        Uses projection including distortion models.
@@ -138,7 +138,7 @@ class OusterLidar : public ProjectionBase
   /// @param[out] stati       Get information about the success of the projections. See
   ///                         \ref ProjectionStatus for more information.
   inline void projectBatch(
-      const Eigen::Matrix3Xd & points, Eigen::Matrix2Xd * imagePoints,
+      const Matrix3Xf & points, Matrix2Xf * imagePoints,
       std::vector<ProjectionStatus> * stati) const;
 
   /// \brief Projects a point in homogenous coordinates to a 2d image point (projection).
@@ -148,7 +148,7 @@ class OusterLidar : public ProjectionBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   inline ProjectionStatus projectHomogeneous(
-      const Eigen::Vector4d & point, Eigen::Vector2d * imagePoint) const;
+      const Vector4f & point, Vector2f * imagePoint) const;
 
   /// \brief Projects a point in homogenous coordinates to a 2d image point (projection).
   ///        Uses projection including distortion models.
@@ -159,9 +159,9 @@ class OusterLidar : public ProjectionBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   inline ProjectionStatus projectHomogeneous(
-      const Eigen::Vector4d & point, Eigen::Vector2d * imagePoint,
-      Eigen::Matrix<double, 2, 4> * pointJacobian,
-      Eigen::Matrix2Xd * intrinsicsJacobian = nullptr) const;
+      const Vector4f & point, Vector2f * imagePoint,
+      Matrixf<2, 4> * pointJacobian,
+      Matrix2Xf * intrinsicsJacobian = nullptr) const;
 
   /// \brief Projects a point in homogenous coordinates to a 2d image point (projection).
   ///        Uses projection including distortion models.
@@ -173,10 +173,10 @@ class OusterLidar : public ProjectionBase
   /// @return     Get information about the success of the projection. See
   ///             \ref ProjectionStatus for more information.
   inline ProjectionStatus projectHomogeneousWithExternalParameters(
-      const Eigen::Vector4d & point, const Eigen::VectorXd & parameters,
-      Eigen::Vector2d * imagePoint,
-      Eigen::Matrix<double, 2, 4> * pointJacobian = nullptr,
-      Eigen::Matrix2Xd * intrinsicsJacobian = nullptr) const;
+      const Vector4f & point, const VectorXf & parameters,
+      Vector2f * imagePoint,
+      Matrixf<2, 4> * pointJacobian = nullptr,
+      Matrix2Xf * intrinsicsJacobian = nullptr) const;
 
   /// \brief Projects points in homogenous coordinates to 2d image points (projection) in a batch.
   ///        Uses projection including distortion models.
@@ -185,7 +185,7 @@ class OusterLidar : public ProjectionBase
   /// @param[out] stati       Get information about the success of the projections. See
   ///                         \ref ProjectionStatus for more information.
   inline void projectHomogeneousBatch(
-      const Eigen::Matrix4Xd & points, Eigen::Matrix2Xd * imagePoints,
+      const Matrix4Xf & points, Matrix2Xf * imagePoints,
       std::vector<ProjectionStatus> * stati) const;
   /// @}
 
@@ -197,32 +197,32 @@ class OusterLidar : public ProjectionBase
   /// @param[in]  imagePoint The image point.
   /// @param[out] direction  The Euclidean direction vector.
   /// @return     true on success.
-  inline bool backProject(const Eigen::Vector2d & imagePoint,
-                          Eigen::Vector3d * direction) const;
+  inline bool backProject(const Vector2f & imagePoint,
+                          Vector3f * direction) const;
 
   /// \brief Back-project a 2d image point into Euclidean space (direction vector).
   /// @param[in]  imagePoint         The image point.
   /// @param[out] direction          The Euclidean direction vector.
   /// @param[out] pointJacobian      Jacobian of the back-projection function  w.r.t. the point.
   /// @return     true on success.
-  inline bool backProject(const Eigen::Vector2d & imagePoint,
-                          Eigen::Vector3d * direction,
-                          Eigen::Matrix<double, 3, 2> * pointJacobian) const;
+  inline bool backProject(const Vector2f & imagePoint,
+                          Vector3f * direction,
+                          Matrixf<3, 2> * pointJacobian) const;
 
   /// \brief Back-project 2d image points into Euclidean space (direction vectors).
   /// @param[in]  imagePoints The image points (one point per column).
   /// @param[out] directions  The Euclidean direction vectors (one point per column).
   /// @param[out] success     Success of each of the back-projection
-  inline bool backProjectBatch(const Eigen::Matrix2Xd & imagePoints,
-                               Eigen::Matrix3Xd * directions,
+  inline bool backProjectBatch(const Matrix2Xf & imagePoints,
+                               Matrix3Xf * directions,
                                std::vector<bool> * success) const;
 
   /// \brief Back-project a 2d image point into homogeneous point (direction vector).
   /// @param[in]  imagePoint The image point.
   /// @param[out] direction  The homogeneous point as direction vector.
   /// @return     true on success.
-  inline bool backProjectHomogeneous(const Eigen::Vector2d & imagePoint,
-                                     Eigen::Vector4d * direction) const;
+  inline bool backProjectHomogeneous(const Vector2f & imagePoint,
+                                     Vector4f * direction) const;
 
   /// \brief Back-project a 2d image point into homogeneous point (direction vector).
   /// @param[in]  imagePoint         The image point.
@@ -230,15 +230,15 @@ class OusterLidar : public ProjectionBase
   /// @param[out] pointJacobian      Jacobian of the back-projection function.
   /// @return     true on success.
   inline bool backProjectHomogeneous(
-      const Eigen::Vector2d & imagePoint, Eigen::Vector4d * direction,
-      Eigen::Matrix<double, 4, 2> * pointJacobian) const;
+      const Vector2f & imagePoint, Vector4f * direction,
+      Matrixf<4, 2> * pointJacobian) const;
 
   /// \brief Back-project 2d image points into homogeneous points (direction vectors).
   /// @param[in]  imagePoints The image points (one point per column).
   /// @param[out] directions  The homogeneous points as direction vectors (one point per column).
   /// @param[out] success     Success of each of the back-projection
-  inline bool backProjectHomogeneousBatch(const Eigen::Matrix2Xd & imagePoints,
-                                          Eigen::Matrix4Xd * directions,
+  inline bool backProjectHomogeneousBatch(const Matrix2Xf & imagePoints,
+                                          Matrix4Xf * directions,
                                           std::vector<bool> * success) const;
   /// @}
 
@@ -253,11 +253,11 @@ class OusterLidar : public ProjectionBase
     return "OusterLidar";
   }
 
-  inline Eigen::VectorXd beamAzimuthAngles() const;
-  inline void setBeamAzimuthAngles(const Eigen::VectorXd &beamAzimuthAngles);
+  inline VectorXf beamAzimuthAngles() const;
+  inline void setBeamAzimuthAngles(const VectorXf &beamAzimuthAngles);
 
-  inline Eigen::VectorXd beamElevationAngles() const;
-  inline void setBeamElevationAngles(const Eigen::VectorXd &beamElevationAngles);
+  inline VectorXf beamElevationAngles() const;
+  inline void setBeamElevationAngles(const VectorXf &beamElevationAngles);
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -266,8 +266,8 @@ protected:
   /// \brief No default constructor.
   OusterLidar() = delete;
 
-  Eigen::VectorXd beamAzimuthAngles_;
-  Eigen::VectorXd beamElevationAngles_;
+  VectorXf beamAzimuthAngles_;
+  VectorXf beamElevationAngles_;
 };
 
 }  // namespace projection

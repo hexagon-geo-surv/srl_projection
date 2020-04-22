@@ -81,7 +81,7 @@ const cv::Mat & ProjectionBase::mask() const
   return mask_;
 }
 
-bool ProjectionBase::isMasked(const Eigen::Vector2d& imagePoint) const
+bool ProjectionBase::isMasked(const Vector2f& imagePoint) const
 {
   if (!isInImage(imagePoint)) {
     return true;
@@ -93,7 +93,7 @@ bool ProjectionBase::isMasked(const Eigen::Vector2d& imagePoint) const
 }
 
 // Check if the keypoint is in the image.
-bool ProjectionBase::isInImage(const Eigen::Vector2d& imagePoint) const
+bool ProjectionBase::isInImage(const Vector2f& imagePoint) const
 {
   if (imagePoint[0] < 0.0 || imagePoint[1] < 0.0) {
     return false;

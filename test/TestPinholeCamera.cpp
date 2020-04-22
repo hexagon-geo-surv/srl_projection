@@ -34,12 +34,15 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <memory>
+#include <type_traits>
 #include <vector>
 #include "srl/projection/PinholeCamera.hpp"
 #include "srl/projection/NoDistortion.hpp"
 #include "srl/projection/RadialTangentialDistortion.hpp"
 #include "srl/projection/RadialTangentialDistortion8.hpp"
 #include "srl/projection/EquidistantDistortion.hpp"
+
+
 
 TEST(PinholeCamera, functions)
 {
@@ -61,69 +64,72 @@ TEST(PinholeCamera, functions)
     // try quite a lot of points:
     for (size_t i = 0; i < NUM_POINTS; ++i) {
       // create a random point in the field of view:
-      Eigen::Vector2d imagePoint = cameras.at(c)->createRandomImagePoint();
+      srl::Vector2f imagePoint = cameras.at(c)->createRandomImagePoint();
 
       // backProject
-      Eigen::Vector3d ray;
+      srl::Vector3f ray;
       ASSERT_TRUE(cameras.at(c)->backProject(imagePoint, &ray)) <<
                         "unsuccessful back projection";
 
       // randomise distance
       ray.normalize();
-      ray *= (0.2 + 8 * (Eigen::Vector2d::Random()[0] + 1.0));
+      ray *= (0.2 + 8 * (srl::Vector2f::Random()[0] + 1.0));
 
       // project
-      Eigen::Vector2d imagePoint2;
-      Eigen::Matrix<double, 2, 3> J;
-      Eigen::Matrix2Xd J_intrinsics;
+      srl::Vector2f imagePoint2;
+      srl::Matrixf<2, 3> J;
+      srl::Matrix2Xf J_intrinsics;
       ASSERT_TRUE(cameras.at(c)->project(ray, &imagePoint2, &J, &J_intrinsics)
               == srl::projection::ProjectionStatus::Successful) <<
                         "unsuccessful projection";
 
       // check they are the same
-      ASSERT_TRUE((imagePoint2 - imagePoint).norm() < 0.01) <<
+      ASSERT_LT((imagePoint2 - imagePoint).norm(), 0.01) <<
                         "project/unproject failure";
 
       // check point Jacobian vs. NumDiff
-      const double dp = 1.0e-7;
-      Eigen::Matrix<double, 2, 3> J_numDiff;
+      const srl::float_t dp = std::is_same<srl::float_t, double>::value ? 1.0e-7 : 1.0e-4;
+      srl::Matrixf<2, 3> J_numDiff;
       for (size_t d = 0; d < 3; ++d) {
-        Eigen::Vector3d point_p = ray
-            + Eigen::Vector3d(d == 0 ? dp : 0, d == 1 ? dp : 0,
-                              d == 2 ? dp : 0);
-        Eigen::Vector3d point_m = ray
-            - Eigen::Vector3d(d == 0 ? dp : 0, d == 1 ? dp : 0,
-                              d == 2 ? dp : 0);
-        Eigen::Vector2d imagePoint_p;
-        Eigen::Vector2d imagePoint_m;
+        srl::Vector3f point_p = ray
+            + srl::Vector3f(d == 0 ? dp : 0,
+                            d == 1 ? dp : 0,
+                            d == 2 ? dp : 0);
+        srl::Vector3f point_m = ray
+            - srl::Vector3f(d == 0 ? dp : 0,
+                            d == 1 ? dp : 0,
+                            d == 2 ? dp : 0);
+        srl::Vector2f imagePoint_p;
+        srl::Vector2f imagePoint_m;
         cameras.at(c)->project(point_p, &imagePoint_p);
         cameras.at(c)->project(point_m, &imagePoint_m);
         J_numDiff.col(d) = (imagePoint_p - imagePoint_m) / (2 * dp);
       }
-      ASSERT_TRUE((J_numDiff - J).norm() < 0.0001) <<
+      const srl::float_t threshold = std::is_same<srl::float_t, double>::value ? 1e-4 : 0.9;
+      ASSERT_LT((J_numDiff - J).norm(), threshold) <<
                         "Jacobian Verification failed";
 
       // check intrinsics Jacobian
       const int numIntrinsics = cameras.at(c)->numIntrinsicsParameters();
-      Eigen::VectorXd intrinsics;
+      srl::VectorXf intrinsics;
       cameras.at(c)->getIntrinsics(intrinsics);
-      Eigen::Matrix2Xd J_numDiff_intrinsics;
+      srl::Matrix2Xf J_numDiff_intrinsics;
       J_numDiff_intrinsics.resize(2,numIntrinsics);
       for (int d = 0; d < numIntrinsics; ++d) {
-        Eigen::VectorXd di;
+        srl::VectorXf di;
         di.resize(numIntrinsics);
         di.setZero();
         di[d] = dp;
-        Eigen::Vector2d imagePoint_p;
-        Eigen::Vector2d imagePoint_m;
-        Eigen::VectorXd intrinsics_p = intrinsics+di;
-        Eigen::VectorXd intrinsics_m = intrinsics-di;
+        srl::Vector2f imagePoint_p;
+        srl::Vector2f imagePoint_m;
+        srl::VectorXf intrinsics_p = intrinsics+di;
+        srl::VectorXf intrinsics_m = intrinsics-di;
         cameras.at(c)->projectWithExternalParameters(ray, intrinsics_p, &imagePoint_p);
         cameras.at(c)->projectWithExternalParameters(ray, intrinsics_m, &imagePoint_m);
         J_numDiff_intrinsics.col(d) = (imagePoint_p - imagePoint_m) / (2 * dp);
       }
 
-      ASSERT_TRUE((J_numDiff_intrinsics - J_intrinsics).norm() < 0.0001) <<
+      ASSERT_LT((J_numDiff_intrinsics - J_intrinsics).norm(), threshold) <<
           "Jacobian verification failed";
     }
   }
