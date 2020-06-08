@@ -18,6 +18,11 @@ target_link_libraries(srl_projection_test
 	${GTEST_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
 )
+target_compile_options(srl_projection_test PRIVATE
+	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
+	-Wall -pedantic -Wextra -Werror>
+)
+
 
 add_test(NAME srl_projection_test
 	COMMAND srl_projection_test)
