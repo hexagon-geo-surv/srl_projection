@@ -4,7 +4,7 @@
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- * 
+ *
  *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above copyright notice,
@@ -77,10 +77,10 @@ TEST(OusterLidar, functions)
       Eigen::Vector3d point_m = ray
           - Eigen::Vector3d(d == 0 ? dp : 0, d == 1 ? dp : 0,
                             d == 2 ? dp : 0);
-      Eigen::Vector2d imagePoint_p;
-      Eigen::Vector2d imagePoint_m;
-      ousterLidar.project(point_p, &imagePoint_p);
-      ousterLidar.project(point_m, &imagePoint_m);
+      Eigen::Vector2d imagePoint_p (-1.f, -1.f);
+      Eigen::Vector2d imagePoint_m (-1.f, -1.f);
+      ASSERT_EQ(ousterLidar.project(point_p, &imagePoint_p), srl::projection::ProjectionStatus::Successful);
+      ASSERT_EQ(ousterLidar.project(point_m, &imagePoint_m), srl::projection::ProjectionStatus::Successful);
       J_numDiff.col(d) = (imagePoint_p - imagePoint_m) / (2 * dp);
     }
     ASSERT_TRUE((J_numDiff - J).norm() < 0.0001) << "Jacobian Verification failed";
