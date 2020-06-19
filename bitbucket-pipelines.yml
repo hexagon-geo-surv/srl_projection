@@ -1,5 +1,6 @@
 pipelines:
-  default:
+  branches:
+    '{master, devel}':
     - step:
         name: Ubuntu 16.04
         image: sotirisp/supereight-ci:16.04
