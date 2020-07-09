@@ -1,10 +1,11 @@
 /*********************************************************************************
  *  OKVIS - Open Keyframe-based Visual-Inertial SLAM
  *  Copyright (c) 2015, Autonomous Systems Lab / ETH Zurich
+ *  Copyright (c) 2020, Smart Robotics Lab / Imperial College London
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- * 
+ *
  *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above copyright notice,
@@ -78,7 +79,7 @@ class PinholeCameraBase : public ProjectionBase {
   }
 
   /// \brief Initialise undistort maps to defaults, i.e.
-  /// undistortedFocalLengh = 0.5 * (focalLengthU() + focalLengthV()) (same for U and V), 
+  /// undistortedFocalLengh = 0.5 * (focalLengthU() + focalLengthV()) (same for U and V),
   /// same image dimensions and center in the middle, i.e
   /// undistortedImageCenterU() = 0.5 * imageWith() + 0.5.
   /// \return True on success.
@@ -92,8 +93,8 @@ class PinholeCameraBase : public ProjectionBase {
   /// @param[in] undistortedImageCenterU The horizontal centre in pixels.
   /// @param[in] undistortedImageCenterV The vertical centre in pixels.
   /// \return True on success.
-  virtual bool initialiseUndistortMaps(int undistortedImageWidth, int undistortedImageHeight, 
-      double undistortedFocalLengthU, double undistortedFocalLengthV, 
+  virtual bool initialiseUndistortMaps(int undistortedImageWidth, int undistortedImageHeight,
+      double undistortedFocalLengthU, double undistortedFocalLengthV,
       double undistortedImageCenterU, double undistortedImageCenterV) = 0;
 
   /// \brief Get undistorted image -- assumes initialiseUndistortMaps was called
@@ -199,7 +200,7 @@ class PinholeCamera : public PinholeCameraBase
   }
 
   /// \brief Initialise undistort maps to defaults, i.e.
-  /// undistortedFocalLengh = 0.5 * (focalLengthU() + focalLengthV()) (same for U and V), 
+  /// undistortedFocalLengh = 0.5 * (focalLengthU() + focalLengthV()) (same for U and V),
   /// same image dimensions and center in the middle, i.e
   /// undistortedImageCenterU() = 0.5 * imageWith() + 0.5.
   /// \return True on success.
@@ -213,8 +214,8 @@ class PinholeCamera : public PinholeCameraBase
   /// @param[in] undistortedImageCenterU The horizontal centre in pixels.
   /// @param[in] undistortedImageCenterV The vertical centre in pixels.
   /// \return True on success.
-  virtual bool initialiseUndistortMaps(int undistortedImageWidth, int undistortedImageHeight, 
-      double undistortedFocalLengthU, double undistortedFocalLengthV, 
+  virtual bool initialiseUndistortMaps(int undistortedImageWidth, int undistortedImageHeight,
+      double undistortedFocalLengthU, double undistortedFocalLengthV,
       double undistortedImageCenterU, double undistortedImageCenterV);
 
   /// \brief Get the model of the undistorted camera.

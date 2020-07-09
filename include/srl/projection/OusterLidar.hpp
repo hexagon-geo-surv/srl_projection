@@ -1,7 +1,7 @@
 /*********************************************************************************
  *  OKVIS - Open Keyframe-based Visual-Inertial SLAM
  *  Copyright (c) 2015, Autonomous Systems Lab / ETH Zurich
- *  Copyright (c) 2020, Smart Robotics Lab, Imperial College London
+ *  Copyright (c) 2020, Smart Robotics Lab / Imperial College London
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:

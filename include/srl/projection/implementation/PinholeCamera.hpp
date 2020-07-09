@@ -1,10 +1,11 @@
 /*********************************************************************************
  *  OKVIS - Open Keyframe-based Visual-Inertial SLAM
  *  Copyright (c) 2015, Autonomous Systems Lab / ETH Zurich
+ *  Copyright (c) 2020, Smart Robotics Lab / Imperial College London
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- * 
+ *
  *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above copyright notice,
@@ -94,15 +95,15 @@ bool PinholeCamera<DISTORTION_T>::setIntrinsics(
 template<class DISTORTION_T>
 bool PinholeCamera<DISTORTION_T>::initialiseUndistortMaps() {
   const double f = (fu_ + fv_) * 0.5;
-  return initialiseUndistortMaps(imageWidth(), imageHeight(), f, f, 
+  return initialiseUndistortMaps(imageWidth(), imageHeight(), f, f,
       double(imageWidth())*0.5+0.5, double(imageHeight())*0.5+0.5);
 }
 
 // Initialise undistort maps, provide custom parameters for the undistorted cam.
 template<class DISTORTION_T>
 bool PinholeCamera<DISTORTION_T>::initialiseUndistortMaps(
-    int undistortedImageWidth, int undistortedImageHeight, 
-    double undistortedFocalLengthU, double undistortedFocalLengthV, 
+    int undistortedImageWidth, int undistortedImageHeight,
+    double undistortedFocalLengthU, double undistortedFocalLengthV,
     double undistortedImageCenterU, double undistortedImageCenterV) {
 
   // store parameters
@@ -186,7 +187,7 @@ PinholeCamera<NoDistortion> PinholeCamera<DISTORTION_T>::undistortedPinholeCamer
 template<class DISTORTION_T>
 bool PinholeCamera<DISTORTION_T>::undistortImage(const cv::Mat & srcImg,
                                                  cv::Mat & destImg) const {
-  cv::remap(srcImg, destImg, map_x_fast_, map_y_fast_, 
+  cv::remap(srcImg, destImg, map_x_fast_, map_y_fast_,
       cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar());
   return true;
 }
