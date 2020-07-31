@@ -104,6 +104,42 @@ bool ProjectionBase::isInImage(const Vector2f& imagePoint) const
   return true;
 }
 
+// Creates a random (uniform distribution) image point.
+srl::Vector2f ProjectionBase::createRandomImagePoint() const
+{
+  // Uniform random sample in image coordinates.
+  // Add safety boundary for later inaccurate backprojection
+  srl::Vector2f outPoint = srl::Vector2f::Random();
+  outPoint += srl::Vector2f::Ones();
+  outPoint *= 0.5;
+  outPoint[0] *= srl::float_t(imageWidth_-1);
+  outPoint[1] *= srl::float_t(imageHeight_-1);
+  return outPoint;
+}
+
+// Creates a random visible point in Euclidean coordinates.
+srl::Vector3f ProjectionBase::createRandomVisiblePoint(srl::float_t minDist,
+                                                     srl::float_t maxDist) const
+{
+  // random image point first:
+  srl::Vector2f imagePoint = createRandomImagePoint();
+  // now sample random depth:
+  srl::Vector2f depth = srl::Vector2f::Random();
+  srl::Vector3f ray;
+  backProject(imagePoint, &ray);
+  ray.normalize();
+  ray *= (0.5 * (maxDist - minDist) * (depth[0] + 1.0) + minDist);  // rescale and offset
+  return ray;
+}
+
+// Creates a random visible point in homogeneous coordinates.
+srl::Vector4f ProjectionBase::createRandomVisibleHomogeneousPoint(
+    srl::float_t minDist, srl::float_t maxDist) const
+{
+  srl::Vector3f point = createRandomVisiblePoint(minDist, maxDist);
+  return srl::Vector4f(point[0], point[1], point[2], 1.0);
+}
+
 } // namespace projection
 } // namespace srl
 

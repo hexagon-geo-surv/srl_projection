@@ -34,9 +34,7 @@ find_package(OpenCV REQUIRED COMPONENTS highgui imgproc core features2d)
 ##############################################
 # Create target and set properties
 
-add_library(${PROJECT_NAME} STATIC
-	src/ProjectionBase.cpp
-)
+add_library(${PROJECT_NAME} INTERFACE)
 
 # Add an alias so that the library can be used inside the build tree, e.g. when
 # testing
@@ -44,21 +42,15 @@ add_library(SRL::Projection ALIAS ${PROJECT_NAME})
 
 # Set target properties
 target_include_directories(${PROJECT_NAME} BEFORE
-	PUBLIC
+  INTERFACE
 		$<INSTALL_INTERFACE:include>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 		${EIGEN3_INCLUDE_DIR}
 		${OpenCV_INCLUDE_DIRS}
 )
 
-set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_compile_options(${PROJECT_NAME} PRIVATE
-	$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-	-Wall -pedantic -Wextra -Werror>
-)
-
 target_link_libraries(${PROJECT_NAME}
-	PUBLIC
+  INTERFACE
 		${OpenCV_LIBS}
 )
 
