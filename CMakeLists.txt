@@ -5,6 +5,13 @@ cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 # Adding the C language is needed for CMake 3.0.0 compatibility
 project(srl-projection VERSION 1.0.0 LANGUAGES C CXX)
 
+
+
+# Options
+option(SRL_PROJECTION_BUILD_TESTS "Enable testing" ON)
+
+
+
 # Make sure that custom modules are found
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -116,6 +123,8 @@ export(PACKAGE SRLProjection)
 
 ##############################################
 ## Add tests
-enable_testing()
-add_subdirectory(test)
+if(SRL_PROJECTION_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(test)
+endif()
 
