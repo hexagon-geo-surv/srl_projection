@@ -5,7 +5,6 @@ find_package(Threads REQUIRED)
 find_package(GTest REQUIRED)
 
 add_executable(srl_projection_test
-	runTests.cpp
 	TestPinholeCamera.cpp
 	TestOusterLidar.cpp
 )
@@ -15,7 +14,7 @@ target_include_directories(srl_projection_test
 )
 target_link_libraries(srl_projection_test
 	SRL::Projection
-	${GTEST_LIBRARIES}
+  ${GTEST_BOTH_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
 )
 target_compile_options(srl_projection_test PRIVATE
