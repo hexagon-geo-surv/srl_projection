@@ -8,5 +8,5 @@ if(NOT TARGET SRL::Projection)
 	include("${SRLPROJECTION_CMAKE_DIR}/SRLProjectionTargets.cmake")
 endif()
 
-set(SRLPROJECTION_lIBRARIES SRL::Projection)
+set(SRL_PROJECTION_LIBRARIES SRL::Projection)
 
