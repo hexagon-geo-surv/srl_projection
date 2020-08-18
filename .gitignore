@@ -34,6 +34,6 @@
 *.app
 
 # Generated directories
-/build/
-/documentation/
+/build*
+/doc*
 
