@@ -95,10 +95,10 @@ bool ProjectionBase::isMasked(const Vector2f& imagePoint) const
 // Check if the keypoint is in the image.
 bool ProjectionBase::isInImage(const Vector2f& imagePoint) const
 {
-  if (imagePoint[0] < 0.0 || imagePoint[1] < 0.0) {
+  if (imagePoint[0] < -0.5f || imagePoint[1] < -0.5f) {
     return false;
   }
-  if (imagePoint[0] >= imageWidth_ || imagePoint[1] >= imageHeight_) {
+  if (imagePoint[0] >= imageWidth_ - 0.5f || imagePoint[1] >= imageHeight_ - 0.5f) {
     return false;
   }
   return true;
