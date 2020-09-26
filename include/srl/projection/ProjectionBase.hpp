@@ -310,16 +310,16 @@ class ProjectionBase
   /// \brief Obtain the number of intrinsics parameters.
   virtual int numIntrinsicsParameters() const = 0;
 
+  /// \brief Check if the keypoint is in the image.
+  inline bool isInImage(const Vector2f& imagePoint) const;
+
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
  protected:
 
   /// \brief Check if the keypoint is masked.
   inline bool isMasked(const Vector2f& imagePoint) const;
-
-  /// \brief Check if the keypoint is in the image.
-  inline bool isInImage(const Vector2f& imagePoint) const;
-
+  
   cv::Mat mask_;  ///< The mask -- empty by default
 
   int imageWidth_;  ///< image width in pixels

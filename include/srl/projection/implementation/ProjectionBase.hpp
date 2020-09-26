@@ -81,17 +81,6 @@ const cv::Mat & ProjectionBase::mask() const
   return mask_;
 }
 
-bool ProjectionBase::isMasked(const Vector2f& imagePoint) const
-{
-  if (!isInImage(imagePoint)) {
-    return true;
-  }
-  if (!hasMask()) {
-    return false;
-  }
-  return mask_.at<uchar>(int(imagePoint[1]), int(imagePoint[0]));
-}
-
 // Check if the keypoint is in the image.
 bool ProjectionBase::isInImage(const Vector2f& imagePoint) const
 {
@@ -102,6 +91,17 @@ bool ProjectionBase::isInImage(const Vector2f& imagePoint) const
     return false;
   }
   return true;
+}
+
+bool ProjectionBase::isMasked(const Vector2f& imagePoint) const
+{
+  if (!isInImage(imagePoint)) {
+    return true;
+  }
+  if (!hasMask()) {
+    return false;
+  }
+  return mask_.at<uchar>(int(imagePoint[1]), int(imagePoint[0]));
 }
 
 // Creates a random (uniform distribution) image point.
