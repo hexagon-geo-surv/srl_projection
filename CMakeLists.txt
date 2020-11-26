@@ -28,7 +28,7 @@ endif()
 # Create the library ###############################################################################
 # Find dependencies
 find_package(Eigen3 REQUIRED)
-find_package(OpenCV REQUIRED COMPONENTS highgui imgproc core features2d)
+find_package(OpenCV REQUIRED COMPONENTS imgproc core)
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(${PROJECT_NAME}
