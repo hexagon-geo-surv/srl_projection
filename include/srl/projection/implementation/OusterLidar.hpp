@@ -131,6 +131,83 @@ ProjectionStatus OusterLidar::project(
   return ProjectionStatus::Successful;
 }
 
+ProjectionStatus OusterLidar::project(
+    const Vector3f & point, Vector2f * imagePoint, 
+    const float* azimuth_image, const float* elevation_image) const
+{
+  // handle singularity
+  if (point.norm() < 1.0e-12) {
+    return ProjectionStatus::Invalid;
+  }
+
+  // compute azimuth and elevation angles (projection) [rad]
+  const float_t R = sqrt(point[0]*point[0] + point[1]*point[1] + point[2]*point[2]);
+  const float_t azimuth = (2.0 * M_PI - std::atan2(point[1], point[0])) * 360.0 / (2 * M_PI);
+  const float_t elevation = std::asin(point[2]/R) * 360.0 / (2 * M_PI);
+
+  // check bounds
+  if(elevation > beamElevationAngles_[0]) {
+    (*imagePoint)[0] = (azimuth - beamAzimuthAngles_[0])/360.0 * imageWidth_;
+    // azimuthal wrap-around
+    if((*imagePoint)[0]<-0.5) {
+      (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
+    }
+    if((*imagePoint)[0]>imageWidth_-0.5) {
+      (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
+    }
+    (*imagePoint)[1] = -1;
+    return ProjectionStatus::OutsideImage;
+  }
+  if(elevation < beamElevationAngles_[beamElevationAngles_.rows()-1]) {
+    (*imagePoint)[0] = (azimuth - beamAzimuthAngles_[beamElevationAngles_.rows()-1])/360.0 * imageWidth_;
+    // azimuthal wrap-around
+    if((*imagePoint)[0]<-0.5) {
+      (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
+    }
+    if((*imagePoint)[0]>imageWidth_-0.5) {
+      (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
+    }
+    (*imagePoint)[1] = imageHeight_;
+    return ProjectionStatus::OutsideImage;
+  }
+  // find the right row
+  /// \todo make this more elegant with binary search
+  bool found = false;
+  int i = 1;
+  for(; i < beamElevationAngles_.rows(); ++i) {
+    if(float_t(beamElevationAngles_[i]) < elevation) {
+      found = true;
+      break;
+    }
+  }
+  if(!found) {
+    return ProjectionStatus::OutsideImage;
+  }
+
+  // for interpolation
+  const float_t r = (elevation-beamElevationAngles_[i])
+      /(beamElevationAngles_[i-1] - beamElevationAngles_[i]);
+  const float_t azimuthOffset = (1.0 - r) * beamAzimuthAngles_[i] + r * beamAzimuthAngles_[i-1];
+
+  // scale and offset
+  (*imagePoint)[0] = (azimuth - azimuthOffset)/360.0 * imageWidth_;
+  (*imagePoint)[1] = i - r;
+
+  // azimuthal wrap-around
+  if((*imagePoint)[0]<-0.5) {
+    (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
+  }
+  if((*imagePoint)[0]>imageWidth_-0.5) {
+    (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
+  }
+
+  // checks
+  if (ProjectionBase::isMasked(*imagePoint)) {
+    return ProjectionStatus::Masked;
+  }
+  return ProjectionStatus::Successful;
+}
+
 // Projects a Euclidean point to a 2d image point (projection).
 ProjectionStatus OusterLidar::project(
     const Vector3f & point, Vector2f * imagePoint,
@@ -330,6 +407,23 @@ void OusterLidar::projectBatch(
     Vector3f point = points.col(i);
     Vector2f imagePoint;
     ProjectionStatus status = project(point, &imagePoint);
+    imagePoints->col(i) = imagePoint;
+    if(stati)
+      stati->push_back(status);
+  }
+}
+void OusterLidar::projectBatch(
+    const Matrix3Xf & points, Matrix2Xf * imagePoints,
+    std::vector<ProjectionStatus> * stati, 
+    const float* azimuth_image, const float* elevation_image) const
+{
+  const int numPoints = points.cols();
+  for (int i = 0; i < numPoints; ++i) {
+    Vector3f point = points.col(i);
+    Vector2f imagePoint;
+    ProjectionStatus status = project(point, &imagePoint, 
+                                      azimuth_image, 
+                                      elevation_image);
     imagePoints->col(i) = imagePoint;
     if(stati)
       stati->push_back(status);
