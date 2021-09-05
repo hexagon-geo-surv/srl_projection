@@ -133,8 +133,8 @@ ProjectionStatus OusterLidar::project(
 
 ProjectionStatus OusterLidar::project(
     const Vector3f & point, Vector2f * imagePoint, 
-    const std::vector<float, Eigen::aligned_allocator<float> >& azimuth_image, 
-    const std::vector<float, Eigen::aligned_allocator<float> >& elevation_image) const
+    const float* azimuth_image, 
+    const float* elevation_image) const
 {
   // handle singularity
   if (point.norm() < 1.0e-12) {
@@ -416,8 +416,8 @@ void OusterLidar::projectBatch(
 void OusterLidar::projectBatch(
     const Matrix3Xf & points, Matrix2Xf * imagePoints,
     std::vector<ProjectionStatus> * stati, 
-    const std::vector<float, Eigen::aligned_allocator<float> >& azimuth_image, 
-    const std::vector<float, Eigen::aligned_allocator<float> >& elevation_image) const
+    const float* azimuth_image, 
+    const float* elevation_image) const
 {
   const int numPoints = points.cols();
   for (int i = 0; i < numPoints; ++i) {
