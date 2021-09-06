@@ -145,10 +145,55 @@ ProjectionStatus OusterLidar::project(
   const float_t R = sqrt(point[0]*point[0] + point[1]*point[1] + point[2]*point[2]);
   const float_t azimuth = (2.0 * M_PI - std::atan2(point[1], point[0])) * 360.0 / (2 * M_PI);
   const float_t elevation = std::asin(point[2]/R) * 360.0 / (2 * M_PI);
+  Eigen::Vector3f unit_ray_point(point[0]/R, point[1]/R, point[2]/R); 
+
+  float max_elevation = -90.0;
+  float min_elevation = 90.0;
+  std::pair<int, int> nearest_pixel(0, 0);
+  float nearest_angle = M_PI;
+  bool found = false;
+  // loop through image pixels
+  for (int i = 0; i < imageWidth_; ++i){
+    for (int j = 0; j < imageHeight_; ++j){
+      // following se::Image indexing
+      int image_index = indexFromXY(i, j);
+      float pixel_elevation = elevation_image[image_index];
+      float pixel_azimuth = azimuth_image[image_index];
+
+      // find max and min elevations for later out of bound checks
+      if (max_elevation < pixel_elevation){
+        max_elevation = pixel_elevation;
+      }
+      if (min_elevation > pixel_elevation){
+        min_elevation = pixel_elevation;
+      }
+
+      // compute angles between the point ray and the pixel ray, and find the closest one
+      Eigen::Vector3f unit_ray_pixel(std::cos(pixel_elevation * M_PI / 360.0) * std::cos(pixel_azimuth * M_PI / 360.0), 
+                                     std::cos(pixel_elevation * M_PI / 360.0) * std::sin(pixel_azimuth * M_PI / 360.0), 
+                                     std::sin(pixel_elevation * M_PI / 360.0));
+      // angle_diff is in radius
+      float angle_diff = std::acos(unit_ray_pixel.dot(unit_ray_point));
+      if (angle_diff < nearest_angle){
+        nearest_angle = angle_diff;
+        nearest_pixel.first = i; 
+        nearest_pixel.second = j;
+        // 5 cm res at 50 m range -> 0.001 radius
+        // if the angle_diff is smaller than this resolution
+        // break to reduce computation
+        if (angle_diff <= 1.0e-3){
+          found = true;
+          break;
+        }
+      }
+    }
+    if (found){
+      break;
+    }
+  }
 
   // check bounds
-  if(elevation > beamElevationAngles_[0]) {
-    (*imagePoint)[0] = (azimuth - beamAzimuthAngles_[0])/360.0 * imageWidth_;
+  if(elevation > max_elevation) {
     // azimuthal wrap-around
     if((*imagePoint)[0]<-0.5) {
       (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
@@ -159,8 +204,7 @@ ProjectionStatus OusterLidar::project(
     (*imagePoint)[1] = -1;
     return ProjectionStatus::OutsideImage;
   }
-  if(elevation < beamElevationAngles_[beamElevationAngles_.rows()-1]) {
-    (*imagePoint)[0] = (azimuth - beamAzimuthAngles_[beamElevationAngles_.rows()-1])/360.0 * imageWidth_;
+  if(elevation < min_elevation) {
     // azimuthal wrap-around
     if((*imagePoint)[0]<-0.5) {
       (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
@@ -171,35 +215,74 @@ ProjectionStatus OusterLidar::project(
     (*imagePoint)[1] = imageHeight_;
     return ProjectionStatus::OutsideImage;
   }
-  // find the right row
-  /// \todo make this more elegant with binary search
-  bool found = false;
-  int i = 1;
-  for(; i < beamElevationAngles_.rows(); ++i) {
-    if(float_t(beamElevationAngles_[i]) < elevation) {
-      found = true;
-      break;
+
+  // Check out of bound for the specific col
+  (*imagePoint)[0] = float(nearest_pixel.first);
+  (*imagePoint)[1] = float(nearest_pixel.second);
+  if (nearest_pixel.second == 0){
+    // top row
+    int index_col_top = indexFromXY(nearest_pixel.first, 0);
+    if (elevation - elevation_image[index_col_top] > 
+       (beamElevationAngles_[0] - beamElevationAngles_[1])/2){
+      // azimuthal wrap-around
+      if((*imagePoint)[0]<-0.5) {
+        (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
+      }
+      if((*imagePoint)[0]>imageWidth_-0.5) {
+        (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
+      }
+      (*imagePoint)[1] = -1;
+      return ProjectionStatus::OutsideImage;
+    }
+  } else if (nearest_pixel.second == imageHeight_ - 1){
+    // bottom row
+    int index_col_bot = indexFromXY(nearest_pixel.first, imageHeight_ - 1);
+    if (elevation_image[index_col_bot] - elevation > 
+       (beamElevationAngles_[imageHeight_ - 2] - beamElevationAngles_[imageHeight_ - 1])/2){
+      // azimuthal wrap-around
+      if((*imagePoint)[0]<-0.5) {
+        (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
+      }
+      if((*imagePoint)[0]>imageWidth_-0.5) {
+        (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
+      }
+      (*imagePoint)[1] = imageHeight_;
+      return ProjectionStatus::OutsideImage;
     }
   }
-  if(!found) {
-    return ProjectionStatus::OutsideImage;
-  }
 
-  // for interpolation
-  const float_t r = (elevation-beamElevationAngles_[i])
-      /(beamElevationAngles_[i-1] - beamElevationAngles_[i]);
-  const float_t azimuthOffset = (1.0 - r) * beamAzimuthAngles_[i] + r * beamAzimuthAngles_[i-1];
-
-  // scale and offset
-  (*imagePoint)[0] = (azimuth - azimuthOffset)/360.0 * imageWidth_;
-  (*imagePoint)[1] = i - r;
-
+  // interpolation
+  float interpolated_x = (azimuth 
+                        - azimuth_image[indexFromXY(nearest_pixel.first - 1, nearest_pixel.second)]) / 
+                         (azimuth_image[indexFromXY(nearest_pixel.first + 1, nearest_pixel.second)] - 
+                          azimuth_image[indexFromXY(nearest_pixel.first - 1, nearest_pixel.second)]); 
+  (*imagePoint)[0] = (*imagePoint)[0] - 1.0 + interpolated_x;
   // azimuthal wrap-around
   if((*imagePoint)[0]<-0.5) {
     (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
   }
   if((*imagePoint)[0]>imageWidth_-0.5) {
     (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
+  }
+
+  if (nearest_pixel.second == 0){
+    float interpolated_y = (elevation_image[indexFromXY(nearest_pixel.first, 1)] 
+                          - elevation) / 
+                           (elevation_image[indexFromXY(nearest_pixel.first, 1)] - 
+                            elevation_image[indexFromXY(nearest_pixel.first, 0)]); 
+    (*imagePoint)[1] = 1.0 - interpolated_y;
+  } else if (nearest_pixel.second == imageHeight_ - 1){
+    float interpolated_y = (elevation 
+                          - elevation_image[indexFromXY(nearest_pixel.first, imageHeight_ - 2)]) / 
+                           (elevation_image[indexFromXY(nearest_pixel.first, imageHeight_ - 1)] - 
+                            elevation_image[indexFromXY(nearest_pixel.first, imageHeight_ - 2)]); 
+    (*imagePoint)[1] = imageHeight_ - 2.0 + interpolated_y;
+  } else {
+    float interpolated_y = (elevation 
+                          - elevation_image[indexFromXY(nearest_pixel.first, nearest_pixel.second - 1)]) / 
+                           (elevation_image[indexFromXY(nearest_pixel.first, nearest_pixel.second + 1)] - 
+                            elevation_image[indexFromXY(nearest_pixel.first, nearest_pixel.second - 1)]); 
+    (*imagePoint)[1] = (*imagePoint)[1] - 1.0 + interpolated_y;
   }
 
   // checks

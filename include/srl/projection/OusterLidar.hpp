@@ -107,6 +107,14 @@ class OusterLidar : public ProjectionBase
       const Vector3f & point, Vector2f * imagePoint, 
       const float* azimuth_image, 
       const float* elevation_image) const;
+  inline int indexFromXY(int x, int y) const {
+    if (x < 0){
+      x += imageWidth_;
+    } else if (x >= imageWidth_){
+      x -= imageWidth_;
+    }
+    return x + imageWidth_ * y;
+  }
 
   /// \brief Projects a Euclidean point to a 2d image point (projection).
   ///        Uses projection including distortion models.
