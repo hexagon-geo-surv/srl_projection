@@ -143,7 +143,7 @@ ProjectionStatus OusterLidar::project(
 
   // compute azimuth and elevation angles (projection) [rad]
   const float_t R = sqrt(point[0]*point[0] + point[1]*point[1] + point[2]*point[2]);
-  const float_t azimuth = (2.0 * M_PI - std::atan2(point[1], point[0])) * 360.0 / (2 * M_PI);
+  const float_t azimuth = (2.0 * M_PI - std::atan2(point[1], point[0])) * 180.0 / M_PI;
   const float_t elevation = std::asin(point[2]/R) * 360.0 / (2 * M_PI);
   Eigen::Vector3f unit_ray_point(point[0]/R, point[1]/R, point[2]/R); 
 
@@ -161,8 +161,7 @@ ProjectionStatus OusterLidar::project(
     }
     (*imagePoint)[1] = -1;
     return ProjectionStatus::OutsideImage;
-  }
-  if(elevation < min_elevation) {
+  } else if(elevation < min_elevation) {
     (*imagePoint)[0] = (azimuth - azimuth_image[indexFromXY(0, imageHeight_-1)])/360.0 * imageWidth_;
     // azimuthal wrap-around
     if((*imagePoint)[0]<-0.5) {
@@ -229,19 +228,20 @@ ProjectionStatus OusterLidar::project(
       float pixel_azimuth = azimuth_image[image_index];
 
       // compute angles between the point ray and the pixel ray, and find the closest one
-      Eigen::Vector3f unit_ray_pixel(std::cos(pixel_elevation * M_PI / 360.0) * std::cos(pixel_azimuth * M_PI / 360.0), 
-                                     std::cos(pixel_elevation * M_PI / 360.0) * std::sin(pixel_azimuth * M_PI / 360.0), 
-                                     std::sin(pixel_elevation * M_PI / 360.0));
+      Eigen::Vector3f unit_ray_pixel(std::cos(pixel_elevation * M_PI / 180.0) * std::cos(-pixel_azimuth * M_PI / 180.0), 
+                                     std::cos(pixel_elevation * M_PI / 180.0) * std::sin(-pixel_azimuth * M_PI / 180.0), 
+                                     std::sin(pixel_elevation * M_PI / 180.0));
+
       // angle_diff is in radius
       float angle_diff = std::acos(unit_ray_pixel.dot(unit_ray_point));
-      if (angle_diff < nearest_angle){
-        nearest_angle = angle_diff;
+      if (abs(angle_diff) < nearest_angle){
+        nearest_angle = abs(angle_diff);
         nearest_pixel.first = i; 
         nearest_pixel.second = j;
         // 5 cm res at 50 m range -> 0.001 radius
         // if the angle_diff is smaller than this resolution
         // break to reduce computation
-        if (angle_diff <= 1.0e-3){
+        if (nearest_angle <= 1.0e-3){
           found = true;
           break;
         }
@@ -291,47 +291,47 @@ ProjectionStatus OusterLidar::project(
     }
   }
 
-  // interpolation
-  float azimuth_left = azimuth_image[indexFromXY(nearest_pixel.first - 1, nearest_pixel.second)];
-  if(azimuth_left < -0.5/float(imageWidth_)) {
-    azimuth_left = azimuth_left + 360.0;
-  } else if(azimuth_left > 360.0-0.5/float(imageWidth_)) {
-    azimuth_left = azimuth_left - 360.0;
-  }
-  float azimuth_right = azimuth_image[indexFromXY(nearest_pixel.first + 1, nearest_pixel.second)];
-  if(azimuth_right < -0.5/float(imageWidth_)) {
-    azimuth_right = azimuth_right + 360.0;
-  } else if(azimuth_right > 360.0-0.5/float(imageWidth_)) {
-    azimuth_right = azimuth_right - 360.0;
-  }
-  float interpolated_x = (azimuth - azimuth_left) / (azimuth_right - azimuth_left); 
-  (*imagePoint)[0] = (*imagePoint)[0] - 1.0 + interpolated_x;
-  if((*imagePoint)[0]<-0.5) {
-    (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
-  } else if((*imagePoint)[0]>imageWidth_-0.5) {
-    (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
-  }
+  // // interpolation
+  // float azimuth_left = azimuth_image[indexFromXY(nearest_pixel.first - 1, nearest_pixel.second)];
+  // if(azimuth_left < -0.5/float(imageWidth_)) {
+  //   azimuth_left = azimuth_left + 360.0;
+  // } else if(azimuth_left > 360.0-0.5/float(imageWidth_)) {
+  //   azimuth_left = azimuth_left - 360.0;
+  // }
+  // float azimuth_right = azimuth_image[indexFromXY(nearest_pixel.first + 1, nearest_pixel.second)];
+  // if(azimuth_right < -0.5/float(imageWidth_)) {
+  //   azimuth_right = azimuth_right + 360.0;
+  // } else if(azimuth_right > 360.0-0.5/float(imageWidth_)) {
+  //   azimuth_right = azimuth_right - 360.0;
+  // }
+  // float interpolated_x = (azimuth - azimuth_left) / (azimuth_right - azimuth_left); 
+  // (*imagePoint)[0] = (*imagePoint)[0] - 1.0 + interpolated_x;
+  // if((*imagePoint)[0]<-0.5) {
+  //   (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
+  // } else if((*imagePoint)[0]>imageWidth_-0.5) {
+  //   (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
+  // }
 
-  // azimuthal wrap-around
-  if (nearest_pixel.second == 0){
-    float interpolated_y = (elevation_image[indexFromXY(nearest_pixel.first, 1)] 
-                          - elevation) / 
-                           (elevation_image[indexFromXY(nearest_pixel.first, 1)] - 
-                            elevation_image[indexFromXY(nearest_pixel.first, 0)]); 
-    (*imagePoint)[1] = 1.0 - interpolated_y;
-  } else if (nearest_pixel.second == imageHeight_ - 1){
-    float interpolated_y = (elevation 
-                          - elevation_image[indexFromXY(nearest_pixel.first, imageHeight_ - 2)]) / 
-                           (elevation_image[indexFromXY(nearest_pixel.first, imageHeight_ - 1)] - 
-                            elevation_image[indexFromXY(nearest_pixel.first, imageHeight_ - 2)]); 
-    (*imagePoint)[1] = imageHeight_ - 2.0 + interpolated_y;
-  } else {
-    float interpolated_y = (elevation 
-                          - elevation_image[indexFromXY(nearest_pixel.first, nearest_pixel.second - 1)]) / 
-                           (elevation_image[indexFromXY(nearest_pixel.first, nearest_pixel.second + 1)] - 
-                            elevation_image[indexFromXY(nearest_pixel.first, nearest_pixel.second - 1)]); 
-    (*imagePoint)[1] = (*imagePoint)[1] - 1.0 + interpolated_y;
-  }
+  // // azimuthal wrap-around
+  // if (nearest_pixel.second == 0){
+  //   float interpolated_y = (elevation_image[indexFromXY(nearest_pixel.first, 1)] 
+  //                         - elevation) / 
+  //                          (elevation_image[indexFromXY(nearest_pixel.first, 1)] - 
+  //                           elevation_image[indexFromXY(nearest_pixel.first, 0)]); 
+  //   (*imagePoint)[1] = 1.0 - interpolated_y;
+  // } else if (nearest_pixel.second == imageHeight_ - 1){
+  //   float interpolated_y = (elevation 
+  //                         - elevation_image[indexFromXY(nearest_pixel.first, imageHeight_ - 2)]) / 
+  //                          (elevation_image[indexFromXY(nearest_pixel.first, imageHeight_ - 1)] - 
+  //                           elevation_image[indexFromXY(nearest_pixel.first, imageHeight_ - 2)]); 
+  //   (*imagePoint)[1] = imageHeight_ - 2.0 + interpolated_y;
+  // } else {
+  //   float interpolated_y = (elevation 
+  //                         - elevation_image[indexFromXY(nearest_pixel.first, nearest_pixel.second - 1)]) / 
+  //                          (elevation_image[indexFromXY(nearest_pixel.first, nearest_pixel.second + 1)] - 
+  //                           elevation_image[indexFromXY(nearest_pixel.first, nearest_pixel.second - 1)]); 
+  //   (*imagePoint)[1] = (*imagePoint)[1] - 1.0 + interpolated_y;
+  // }
 
   // checks
   if (ProjectionBase::isMasked(*imagePoint)) {
