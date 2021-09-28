@@ -105,8 +105,8 @@ class OusterLidar : public ProjectionBase
       const Vector3f & point, Vector2f * imagePoint) const;
   inline ProjectionStatus project(
       const Vector3f & point, Vector2f * imagePoint, 
-      const float* azimuth_image, 
-      const float* elevation_image) const;
+      const float* u_image, 
+      const float* v_image) const;
   inline int indexFromXY(int x, int y) const {
     if (x < 0){
       x += imageWidth_;
@@ -158,8 +158,8 @@ class OusterLidar : public ProjectionBase
   inline void projectBatch(
       const Matrix3Xf & points, Matrix2Xf * imagePoints,
       std::vector<ProjectionStatus> * stati, 
-      const float* azimuth_image, 
-      const float* elevation_image) const;
+      const float* u_image, 
+      const float* v_image) const;
 
   /// \brief Projects a point in homogenous coordinates to a 2d image point (projection).
   ///        Uses projection including distortion models.

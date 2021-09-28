@@ -133,8 +133,8 @@ ProjectionStatus OusterLidar::project(
 
 ProjectionStatus OusterLidar::project(
     const Vector3f & point, Vector2f * imagePoint, 
-    const float* azimuth_image, 
-    const float* elevation_image) const
+    const float* u_image, 
+    const float* v_image) const
 {
   // handle singularity
   if (point.norm() < 1.0e-12) {
@@ -152,7 +152,7 @@ ProjectionStatus OusterLidar::project(
   max_elevation = beamElevationAngles_[0];
   min_elevation = beamElevationAngles_[beamElevationAngles_.rows()-1];
   if(elevation > max_elevation) {
-    (*imagePoint)[0] = (azimuth - azimuth_image[indexFromXY(0, 0)])/360.0 * imageWidth_;
+    (*imagePoint)[0] = (azimuth - u_image[indexFromXY(0, 0)])/360.0 * imageWidth_;
     // azimuthal wrap-around
     if((*imagePoint)[0]<-0.5) {
       (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
@@ -162,7 +162,7 @@ ProjectionStatus OusterLidar::project(
     (*imagePoint)[1] = -1;
     return ProjectionStatus::OutsideImage;
   } else if(elevation < min_elevation) {
-    (*imagePoint)[0] = (azimuth - azimuth_image[indexFromXY(0, imageHeight_-1)])/360.0 * imageWidth_;
+    (*imagePoint)[0] = (azimuth - u_image[indexFromXY(0, imageHeight_-1)])/360.0 * imageWidth_;
     // azimuthal wrap-around
     if((*imagePoint)[0]<-0.5) {
       (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
@@ -224,8 +224,8 @@ ProjectionStatus OusterLidar::project(
     for (int i = x_search_min; i <= x_search_max; ++i){
       // following se::Image indexing
       int image_index = indexFromXY(i, j);
-      float pixel_elevation = elevation_image[image_index];
-      float pixel_azimuth = azimuth_image[image_index];
+      float pixel_elevation = v_image[image_index];
+      float pixel_azimuth = u_image[image_index];
 
       // compute angles between the point ray and the pixel ray, and find the closest one
       Eigen::Vector3f unit_ray_pixel(std::cos(pixel_elevation * M_PI / 180.0) * std::cos(-pixel_azimuth * M_PI / 180.0), 
@@ -264,7 +264,7 @@ ProjectionStatus OusterLidar::project(
   if (nearest_pixel.second == 0){
     // top row
     int index_col_top = indexFromXY(nearest_pixel.first, 0);
-    if (elevation - elevation_image[index_col_top] > 
+    if (elevation - v_image[index_col_top] > 
        (beamElevationAngles_[0] - beamElevationAngles_[1])/2){
       // azimuthal wrap-around
       if((*imagePoint)[0]<-0.5) {
@@ -278,7 +278,7 @@ ProjectionStatus OusterLidar::project(
   } else if (nearest_pixel.second == imageHeight_ - 1){
     // bottom row
     int index_col_bot = indexFromXY(nearest_pixel.first, imageHeight_ - 1);
-    if (elevation_image[index_col_bot] - elevation > 
+    if (v_image[index_col_bot] - elevation > 
        (beamElevationAngles_[imageHeight_ - 2] - beamElevationAngles_[imageHeight_ - 1])/2){
       // azimuthal wrap-around
       if((*imagePoint)[0]<-0.5) {
@@ -290,48 +290,6 @@ ProjectionStatus OusterLidar::project(
       return ProjectionStatus::OutsideImage;
     }
   }
-
-  // // interpolation
-  // float azimuth_left = azimuth_image[indexFromXY(nearest_pixel.first - 1, nearest_pixel.second)];
-  // if(azimuth_left < -0.5/float(imageWidth_)) {
-  //   azimuth_left = azimuth_left + 360.0;
-  // } else if(azimuth_left > 360.0-0.5/float(imageWidth_)) {
-  //   azimuth_left = azimuth_left - 360.0;
-  // }
-  // float azimuth_right = azimuth_image[indexFromXY(nearest_pixel.first + 1, nearest_pixel.second)];
-  // if(azimuth_right < -0.5/float(imageWidth_)) {
-  //   azimuth_right = azimuth_right + 360.0;
-  // } else if(azimuth_right > 360.0-0.5/float(imageWidth_)) {
-  //   azimuth_right = azimuth_right - 360.0;
-  // }
-  // float interpolated_x = (azimuth - azimuth_left) / (azimuth_right - azimuth_left); 
-  // (*imagePoint)[0] = (*imagePoint)[0] - 1.0 + interpolated_x;
-  // if((*imagePoint)[0]<-0.5) {
-  //   (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
-  // } else if((*imagePoint)[0]>imageWidth_-0.5) {
-  //   (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
-  // }
-
-  // // azimuthal wrap-around
-  // if (nearest_pixel.second == 0){
-  //   float interpolated_y = (elevation_image[indexFromXY(nearest_pixel.first, 1)] 
-  //                         - elevation) / 
-  //                          (elevation_image[indexFromXY(nearest_pixel.first, 1)] - 
-  //                           elevation_image[indexFromXY(nearest_pixel.first, 0)]); 
-  //   (*imagePoint)[1] = 1.0 - interpolated_y;
-  // } else if (nearest_pixel.second == imageHeight_ - 1){
-  //   float interpolated_y = (elevation 
-  //                         - elevation_image[indexFromXY(nearest_pixel.first, imageHeight_ - 2)]) / 
-  //                          (elevation_image[indexFromXY(nearest_pixel.first, imageHeight_ - 1)] - 
-  //                           elevation_image[indexFromXY(nearest_pixel.first, imageHeight_ - 2)]); 
-  //   (*imagePoint)[1] = imageHeight_ - 2.0 + interpolated_y;
-  // } else {
-  //   float interpolated_y = (elevation 
-  //                         - elevation_image[indexFromXY(nearest_pixel.first, nearest_pixel.second - 1)]) / 
-  //                          (elevation_image[indexFromXY(nearest_pixel.first, nearest_pixel.second + 1)] - 
-  //                           elevation_image[indexFromXY(nearest_pixel.first, nearest_pixel.second - 1)]); 
-  //   (*imagePoint)[1] = (*imagePoint)[1] - 1.0 + interpolated_y;
-  // }
 
   // checks
   if (ProjectionBase::isMasked(*imagePoint)) {
@@ -547,16 +505,16 @@ void OusterLidar::projectBatch(
 void OusterLidar::projectBatch(
     const Matrix3Xf & points, Matrix2Xf * imagePoints,
     std::vector<ProjectionStatus> * stati, 
-    const float* azimuth_image, 
-    const float* elevation_image) const
+    const float* u_image, 
+    const float* v_image) const
 {
   const int numPoints = points.cols();
   for (int i = 0; i < numPoints; ++i) {
     Vector3f point = points.col(i);
     Vector2f imagePoint;
     ProjectionStatus status = project(point, &imagePoint, 
-                                      azimuth_image, 
-                                      elevation_image);
+                                      u_image, 
+                                      v_image);
     imagePoints->col(i) = imagePoint;
     if(stati)
       stati->push_back(status);
