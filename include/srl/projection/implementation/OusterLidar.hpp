@@ -152,7 +152,7 @@ ProjectionStatus OusterLidar::project(
   max_elevation = beamElevationAngles_[0];
   min_elevation = beamElevationAngles_[beamElevationAngles_.rows()-1];
   if(elevation > max_elevation) {
-    (*imagePoint)[0] = (azimuth - u_image[indexFromXY(0, 0)])/360.0 * imageWidth_;
+    (*imagePoint)[0] = (azimuth - beamAzimuthAngles_[0])/360.0 * imageWidth_;
     // azimuthal wrap-around
     if((*imagePoint)[0]<-0.5) {
       (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
@@ -162,7 +162,7 @@ ProjectionStatus OusterLidar::project(
     (*imagePoint)[1] = -1;
     return ProjectionStatus::OutsideImage;
   } else if(elevation < min_elevation) {
-    (*imagePoint)[0] = (azimuth - u_image[indexFromXY(0, imageHeight_-1)])/360.0 * imageWidth_;
+    (*imagePoint)[0] = (azimuth - beamAzimuthAngles_[beamElevationAngles_.rows()-1])/360.0 * imageWidth_;
     // azimuthal wrap-around
     if((*imagePoint)[0]<-0.5) {
       (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
@@ -205,91 +205,94 @@ ProjectionStatus OusterLidar::project(
   int search_center_x = (int) std::roundf((*imagePoint)[0]);
   int search_center_y = (int) std::roundf((*imagePoint)[1]);
 
-  std::pair<int, int> nearest_pixel(0, 0);
-  float nearest_angle = M_PI;
-  found = false;
-  int y_search_range = 2;
-  int x_search_range = 7;
-  int y_search_min = search_center_y - y_search_range;
-  int y_search_max = search_center_y + y_search_range;
-  if (search_center_y < y_search_range){
-    y_search_min = 0;
-  } else if (search_center_y > imageHeight_ - 1 - y_search_range){
-    y_search_max = imageHeight_ - 1;
-  }
-  int x_search_min = search_center_x - x_search_range;
-  int x_search_max = search_center_x + x_search_range; // the wrap around for x is implemented in indexFromXY() function
-  // loop through image pixels
-  for (int j = y_search_min; j <= y_search_max; ++j){
-    for (int i = x_search_min; i <= x_search_max; ++i){
-      // following se::Image indexing
-      int image_index = indexFromXY(i, j);
-      float pixel_elevation = v_image[image_index];
-      float pixel_azimuth = u_image[image_index];
+  (*imagePoint)[0] = u_image[indexFromXY(search_center_x, search_center_y)];
+  (*imagePoint)[1] = v_image[indexFromXY(search_center_x, search_center_y)];
 
-      // compute angles between the point ray and the pixel ray, and find the closest one
-      Eigen::Vector3f unit_ray_pixel(std::cos(pixel_elevation * M_PI / 180.0) * std::cos(-pixel_azimuth * M_PI / 180.0), 
-                                     std::cos(pixel_elevation * M_PI / 180.0) * std::sin(-pixel_azimuth * M_PI / 180.0), 
-                                     std::sin(pixel_elevation * M_PI / 180.0));
+  // std::pair<int, int> nearest_pixel(0, 0);
+  // float nearest_angle = M_PI;
+  // found = false;
+  // int y_search_range = 2;
+  // int x_search_range = 7;
+  // int y_search_min = search_center_y - y_search_range;
+  // int y_search_max = search_center_y + y_search_range;
+  // if (search_center_y < y_search_range){
+  //   y_search_min = 0;
+  // } else if (search_center_y > imageHeight_ - 1 - y_search_range){
+  //   y_search_max = imageHeight_ - 1;
+  // }
+  // int x_search_min = search_center_x - x_search_range;
+  // int x_search_max = search_center_x + x_search_range; // the wrap around for x is implemented in indexFromXY() function
+  // // loop through image pixels
+  // for (int j = y_search_min; j <= y_search_max; ++j){
+  //   for (int i = x_search_min; i <= x_search_max; ++i){
+  //     // following se::Image indexing
+  //     int image_index = indexFromXY(i, j);
+  //     float pixel_elevation = v_image[image_index];
+  //     float pixel_azimuth = u_image[image_index];
 
-      // angle_diff is in radius
-      float angle_diff = std::acos(unit_ray_pixel.dot(unit_ray_point));
-      if (abs(angle_diff) < nearest_angle){
-        nearest_angle = abs(angle_diff);
-        nearest_pixel.first = i; 
-        nearest_pixel.second = j;
-        // 5 cm res at 50 m range -> 0.001 radius
-        // if the angle_diff is smaller than this resolution
-        // break to reduce computation
-        if (nearest_angle <= 1.0e-3){
-          found = true;
-          break;
-        }
-      }
-    }
-    if (found){
-      break;
-    }
-  }
+  //     // compute angles between the point ray and the pixel ray, and find the closest one
+  //     Eigen::Vector3f unit_ray_pixel(std::cos(pixel_elevation * M_PI / 180.0) * std::cos(-pixel_azimuth * M_PI / 180.0), 
+  //                                    std::cos(pixel_elevation * M_PI / 180.0) * std::sin(-pixel_azimuth * M_PI / 180.0), 
+  //                                    std::sin(pixel_elevation * M_PI / 180.0));
 
-  // Check out of bound for the specific col
-  (*imagePoint)[0] = float(nearest_pixel.first);
-  (*imagePoint)[1] = float(nearest_pixel.second);
-  // azimuthal wrap-around
-  if((*imagePoint)[0]<-0.5) {
-    (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
-  } else if((*imagePoint)[0]>imageWidth_-0.5) {
-    (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
-  }
-  if (nearest_pixel.second == 0){
-    // top row
-    int index_col_top = indexFromXY(nearest_pixel.first, 0);
-    if (elevation - v_image[index_col_top] > 
-       (beamElevationAngles_[0] - beamElevationAngles_[1])/2){
-      // azimuthal wrap-around
-      if((*imagePoint)[0]<-0.5) {
-        (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
-      } else if((*imagePoint)[0]>imageWidth_-0.5) {
-        (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
-      }
-      (*imagePoint)[1] = -1;
-      return ProjectionStatus::OutsideImage;
-    }
-  } else if (nearest_pixel.second == imageHeight_ - 1){
-    // bottom row
-    int index_col_bot = indexFromXY(nearest_pixel.first, imageHeight_ - 1);
-    if (v_image[index_col_bot] - elevation > 
-       (beamElevationAngles_[imageHeight_ - 2] - beamElevationAngles_[imageHeight_ - 1])/2){
-      // azimuthal wrap-around
-      if((*imagePoint)[0]<-0.5) {
-        (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
-      } else if((*imagePoint)[0]>imageWidth_-0.5) {
-        (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
-      }
-      (*imagePoint)[1] = imageHeight_;
-      return ProjectionStatus::OutsideImage;
-    }
-  }
+  //     // angle_diff is in radius
+  //     float angle_diff = std::acos(unit_ray_pixel.dot(unit_ray_point));
+  //     if (abs(angle_diff) < nearest_angle){
+  //       nearest_angle = abs(angle_diff);
+  //       nearest_pixel.first = i; 
+  //       nearest_pixel.second = j;
+  //       // 5 cm res at 50 m range -> 0.001 radius
+  //       // if the angle_diff is smaller than this resolution
+  //       // break to reduce computation
+  //       if (nearest_angle <= 1.0e-3){
+  //         found = true;
+  //         break;
+  //       }
+  //     }
+  //   }
+  //   if (found){
+  //     break;
+  //   }
+  // }
+
+  // // Check out of bound for the specific col
+  // (*imagePoint)[0] = float(nearest_pixel.first);
+  // (*imagePoint)[1] = float(nearest_pixel.second);
+  // // azimuthal wrap-around
+  // if((*imagePoint)[0]<-0.5) {
+  //   (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
+  // } else if((*imagePoint)[0]>imageWidth_-0.5) {
+  //   (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
+  // }
+  // if (nearest_pixel.second == 0){
+  //   // top row
+  //   int index_col_top = indexFromXY(nearest_pixel.first, 0);
+  //   if (elevation - v_image[index_col_top] > 
+  //      (beamElevationAngles_[0] - beamElevationAngles_[1])/2){
+  //     // azimuthal wrap-around
+  //     if((*imagePoint)[0]<-0.5) {
+  //       (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
+  //     } else if((*imagePoint)[0]>imageWidth_-0.5) {
+  //       (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
+  //     }
+  //     (*imagePoint)[1] = -1;
+  //     return ProjectionStatus::OutsideImage;
+  //   }
+  // } else if (nearest_pixel.second == imageHeight_ - 1){
+  //   // bottom row
+  //   int index_col_bot = indexFromXY(nearest_pixel.first, imageHeight_ - 1);
+  //   if (v_image[index_col_bot] - elevation > 
+  //      (beamElevationAngles_[imageHeight_ - 2] - beamElevationAngles_[imageHeight_ - 1])/2){
+  //     // azimuthal wrap-around
+  //     if((*imagePoint)[0]<-0.5) {
+  //       (*imagePoint)[0] = (*imagePoint)[0] + imageWidth_;
+  //     } else if((*imagePoint)[0]>imageWidth_-0.5) {
+  //       (*imagePoint)[0] = (*imagePoint)[0] - imageWidth_;
+  //     }
+  //     (*imagePoint)[1] = imageHeight_;
+  //     return ProjectionStatus::OutsideImage;
+  //   }
+  // }
 
   // checks
   if (ProjectionBase::isMasked(*imagePoint)) {
