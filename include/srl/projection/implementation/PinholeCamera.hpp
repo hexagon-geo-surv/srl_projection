@@ -585,7 +585,6 @@ bool PinholeCamera<DISTORTION_T>::backProjectBatch(
     std::vector<bool> * success) const
 {
   const int numPoints = imagePoints.cols();
-  directions->row(3) = VectorXf::Ones(numPoints);
   for (int i = 0; i < numPoints; ++i) {
     Vector2f imagePoint = imagePoints.col(i);
     Vector3f point;
